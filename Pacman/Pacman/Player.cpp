@@ -78,8 +78,6 @@ void Player::Update(int elapsedTime)
 		if (keyboardState->IsKeyDown(Input::Keys::S))
 			_playerPosition->Y += _cPlayerSpeed * elapsedTime; //Moves Pacman downwards
 
-		_frameCount++;
-	}
 		// if the Player hits a wall it stops in place
 		if (_playerPosition->X > Graphics::GetViewportWidth() - 32) //Right wall
 			_playerPosition->X = Graphics::GetViewportWidth() - 32;
@@ -92,6 +90,11 @@ void Player::Update(int elapsedTime)
 
 		if (_playerPosition->Y < 0) //Top Wall
 			_playerPosition->Y = 0;
+
+
+		_frameCount++;
+	}
+		
 	
 
 }

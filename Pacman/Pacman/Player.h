@@ -32,7 +32,7 @@ private:
 	Texture2D* _munchieBlueTexture;
 	Texture2D* _munchieInvertedTexture;
 
-	// Data to represent pause menu
+	// Data to represent pause/start menu
 	Texture2D* _menuBackground;
 	Rect * _menuRectangle;
 	Vector2* _menuStringPosition;
