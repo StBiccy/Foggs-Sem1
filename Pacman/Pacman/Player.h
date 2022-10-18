@@ -24,12 +24,19 @@ private:
 	Vector2* _pacmanPosition;
 	Rect* _pacmanSourceRect;
 	Texture2D* _pacmanTexture;
+	const float _cPlayerSpeed;
 
 	// Data to represent Munchie
 	int _frameCount;
 	Rect* _munchieRect;
 	Texture2D* _munchieBlueTexture;
 	Texture2D* _munchieInvertedTexture;
+
+	// Data to represent pause menu
+	Texture2D* _menuBackground;
+	Rect * _menuRectangle;
+	Vector2* _menuStringPosition;
+	bool _paused;
 
 	// Position for String
 	Vector2* _stringPosition;
