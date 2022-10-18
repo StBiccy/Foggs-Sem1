@@ -17,13 +17,13 @@ using namespace S2D;
 // Declares the Pacman class which inherits from the Game class.
 // This allows us to overload the Game class methods to help us
 // load content, draw and update our game.
-class Pacman : public Game
+class Player : public Game
 {
 private:
-	// Data to represent Pacman
-	Vector2* _pacmanPosition;
-	Rect* _pacmanSourceRect;
-	Texture2D* _pacmanTexture;
+	// Data to represent Player
+	Vector2* _playerPosition;
+	Rect* _playerSourceRect;
+	Texture2D* _playerTexture;
 	const float _cPlayerSpeed;
 
 	// Data to represent Munchie
@@ -41,12 +41,14 @@ private:
 	// Position for String
 	Vector2* _stringPosition;
 
+	bool _pKeyDown;
+
 public:
 	/// <summary> Constructs the Pacman class. </summary>
-	Pacman(int argc, char* argv[]);
+	Player(int argc, char* argv[]);
 
 	/// <summary> Destroys any data associated with Pacman class. </summary>
-	virtual ~Pacman();
+	virtual ~Player();
 
 	/// <summary> All content should be loaded in this method. </summary>
 	void virtual LoadContent();
