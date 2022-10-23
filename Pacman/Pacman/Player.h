@@ -42,6 +42,12 @@ private:
 	Vector2* _stringPosition;
 
 	bool _pKeyDown;
+	
+	// Physics values
+	Vector2* _velocity;
+	static const float _gravity;
+	static const float _maxFallSpeed;
+
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>
@@ -50,12 +56,13 @@ public:
 	/// <summary> Destroys any data associated with Pacman class. </summary>
 	virtual ~Player();
 
+	//void SetVelocity(Vector2 velocity);
+	//Vector2* GetVelocity();
+
 	/// <summary> All content should be loaded in this method. </summary>
 	void virtual LoadContent();
 
-	/// <summary> Called every frame - update game logic here. </summary>
 	void virtual Update(int elapsedTime);
-
-	/// <summary> Called every frame - draw game here. </summary>
 	void virtual Draw(int elapsedTime);
+	void virtual PhysicsUpdate(int elapsedTime);
 };

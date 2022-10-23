@@ -2,6 +2,9 @@
 
 #include <sstream>
 
+const float Player::_gravity = 1;
+const float Player::_maxFallSpeed = 1000;
+
 Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 {
 	_frameCount = 0;
@@ -22,6 +25,10 @@ Player::~Player()
 	delete _munchieBlueTexture;
 	delete _munchieInvertedTexture;
 	delete _munchieRect;
+	delete _menuBackground;
+	delete _menuRectangle;
+
+	delete _velocity;
 }
 
 void Player::LoadContent()
@@ -48,10 +55,22 @@ void Player::LoadContent()
 
 	// Set string position
 	_stringPosition = new Vector2(10.0f, 25.0f);
+
+	_velocity = new Vector2(0, 0);
+}
+
+void Player::PhysicsUpdate(int elapsedTime)
+{
+//	float _speedIncress = 0.016f;
+	_velocity->Y += _gravity;
+	_velocity->X = 0;
+	_playerPosition->Y += _velocity->Y;
 }
 
 void Player::Update(int elapsedTime)
 {
+	PhysicsUpdate(elapsedTime);
+
 	// Gets the current state of the keyboard
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
 
@@ -94,8 +113,6 @@ void Player::Update(int elapsedTime)
 
 		_frameCount++;
 	}
-		
-	
 
 }
 
@@ -138,4 +155,5 @@ void Player::Draw(int elapsedTime)
 	// Draws String
 	SpriteBatch::DrawString(stream.str().c_str(), _stringPosition, Color::Green);
 	SpriteBatch::EndDraw(); // Ends Drawing
+
 }
