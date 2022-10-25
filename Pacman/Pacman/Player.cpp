@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-const float Player::_gravity = 1;
+const float Player::_gravity = 0.1f;
 const float Player::_maxFallSpeed = 1000;
 
 Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
@@ -61,8 +61,7 @@ void Player::LoadContent()
 
 void Player::PhysicsUpdate(int elapsedTime)
 {
-//	float _speedIncress = 0.016f;
-	_velocity->Y += _gravity;
+	_velocity->Y = MathHelper::Clamp(_velocity->Y + _gravity * elapsedTime ,-_maxFallSpeed, _maxFallSpeed);
 	_velocity->X = 0;
 	_playerPosition->Y += _velocity->Y;
 }
@@ -120,7 +119,7 @@ void Player::Draw(int elapsedTime)
 {
 	// Allows us to easily create a string
 	std::stringstream stream;
-	stream << "Pacman X: " << _playerPosition->X << " Y: " << _playerPosition->Y;
+	stream << "Player X: " << _playerPosition->X << " Y: " << _playerPosition->Y;
 
 	SpriteBatch::BeginDraw(); // Starts Drawing
 	SpriteBatch::Draw(_playerTexture, _playerPosition, _playerSourceRect); // Draws Pacman
