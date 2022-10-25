@@ -25,6 +25,10 @@ private:
 	Rect* _playerSourceRect;
 	Texture2D* _playerTexture;
 	const float _cPlayerSpeed;
+	int _playerDirection;
+	int _playerFrame;
+	int _playerCurrentFrameTime;
+	const int _cPlayerFrameTime;
 
 	// Data to represent Munchie
 	int _frameCount;
