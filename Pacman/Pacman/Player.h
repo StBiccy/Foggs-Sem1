@@ -45,8 +45,8 @@ private:
 	
 	// Physics values
 	Vector2* _velocity;
-	static const float _gravity;
-	static const float _maxFallSpeed;
+	static const float _cGravity;
+	static const float _cMaxFallSpeed;
 
 
 public:

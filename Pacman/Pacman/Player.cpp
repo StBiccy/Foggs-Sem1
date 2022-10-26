@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-const float Player::_gravity = 0.1f;
-const float Player::_maxFallSpeed = 1000;
+const float Player::_cGravity = 0.1f;
+const float Player::_cMaxFallSpeed = 1000;
 
 Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 {
@@ -11,7 +11,7 @@ Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 	_paused = false;
 
 	//Initialise important Game aspects
-	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25, "Pacman", 60);
+	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25, "MAX", 60);
 	Input::Initialise();
 
 	// Start the Game Loop - This calls Update and Draw in game loop
@@ -35,21 +35,21 @@ void Player::LoadContent()
 {
 	// Load Pacman
 	_playerTexture = new Texture2D();
-	_playerTexture->Load("Textures/Pacman.tga", false);
+	_playerTexture->Load("Content/Textures/Pacman.tga", false);
 	_playerPosition = new Vector2(350.0f, 350.0f);
 	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
 
 	// Load Munchie
 	_munchieBlueTexture = new Texture2D();
-	_munchieBlueTexture->Load("Textures/Munchie.tga", true);
+	_munchieBlueTexture->Load("Content/Textures/Munchie.tga", true);
 	_munchieInvertedTexture = new Texture2D();
-	_munchieInvertedTexture->Load("Textures/MunchieInverted.tga", true);
+	_munchieInvertedTexture->Load("Content/Textures/MunchieInverted.tga", true);
 	_munchieRect = new Rect(100.0f, 450.0f, 12, 12);
 
 	//Set menu Paramters
 
 	_menuBackground = new Texture2D();
-	_menuBackground->Load("Textures/Transparency.PNG", false);
+	_menuBackground->Load("Content/Textures/Transparency.PNG", false);
 	_menuRectangle = new Rect(0.0f, 0.0f, Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
 	_menuStringPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f, Graphics::GetViewportHeight() / 2.0f);
 
@@ -61,14 +61,14 @@ void Player::LoadContent()
 
 void Player::PhysicsUpdate(int elapsedTime)
 {
-	_velocity->Y = MathHelper::Clamp(_velocity->Y + _gravity * elapsedTime ,-_maxFallSpeed, _maxFallSpeed);
+	_velocity->Y = MathHelper::Clamp(_velocity->Y + _cGravity * elapsedTime ,-_cMaxFallSpeed, _cMaxFallSpeed);
 	_velocity->X = 0;
 	_playerPosition->Y += _velocity->Y;
 }
 
 void Player::Update(int elapsedTime)
 {
-	PhysicsUpdate(elapsedTime);
+	//PhysicsUpdate(elapsedTime);
 
 	// Gets the current state of the keyboard
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
@@ -106,8 +106,8 @@ void Player::Update(int elapsedTime)
 		if (_playerPosition->Y > Graphics::GetViewportHeight() - 32) //Bottom wall
 			_playerPosition->Y = Graphics::GetViewportHeight() - 32;
 
-		if (_playerPosition->Y < 0) //Top Wall
-			_playerPosition->Y = 0;
+		//if (_playerPosition->Y < 0) //Top Wall
+			//_playerPosition->Y = 0;
 
 
 		_frameCount++;
