@@ -12,6 +12,7 @@ Level::Level()
 
 Level::~Level(void)
 {
+
 	// i need to figure out how this works
 	for (vector<vector<Tile*>>::iterator it = _tiles->begin(); it != _tiles->end(); it++)
 	{
@@ -29,14 +30,16 @@ int Level::GetWidth()
 	return _tiles->size();
 }
 
-int Level::GetHight()
+int Level::GetHeight()
 {
 	return _tiles->at(0).size();
 }
 
 void Level::LoadTiles()
 {
-	// try to understand this a little more than you already do
+	cout << "hi" << endl;
+
+	// all ik is this has something to do with loading the level
 	int _width;
 	vector<string>* _lines = new vector<string>();
 	fstream _stream;
@@ -59,9 +62,15 @@ void Level::LoadTiles()
 	delete [] _line;
 	delete _sline;
 
+	//_tiles has the first vector set to that of the width 
+	// //(i feel this should mean the width of the grid but idk)
+	// 
+	//the second vector is set to the size of _lines 
+	//(i feel this should mean hight but idk rn)
 	_tiles = new vector<vector<Tile*>>(_width, vector<Tile*>(_lines->size()));
 
-	for (int y = 0; y < GetHight(); ++y)
+	// this loops over every tile position
+	for (int y = 0; y < GetHeight(); ++y)
 	{
 		for (int x = 0; x < GetWidth(); x++)
 		{
@@ -77,6 +86,7 @@ void Level::LoadTiles()
 //check what type of tile is being held in the _tileType value
 Tile* Level::LoadTile(const char _tileType, int x, int y)
 {
+
 	switch (_tileType)
 	{
 	case '.':
@@ -90,10 +100,13 @@ Tile* Level::LoadTile(const char _tileType, int x, int y)
 	}
 }
 
+//stringsream stors the file location as a string. 
+//the texture loads the file using the string constructed in the stringstream.
+//returns the with the texture and the tileCollision information that was passed down in the function's parameter
 Tile* Level::LoadTile(const char* name, tileCollision collision)
 {
 	stringstream ss;
-	ss << "content/Tile/" << name << ".png";
+	ss << "content/Tiles/" << name << ".png";
 	Texture2D* tex = new Texture2D();
 	tex->Load(ss.str().c_str(), false);
 
@@ -101,5 +114,26 @@ Tile* Level::LoadTile(const char* name, tileCollision collision)
 }
 
 //remember where you were
+void Level::Draw(int elapsedTime)
+{
+	DrawTiles();
+}
 
-
+void Level::DrawTiles()
+{
+	for (int y = 0; y < GetHeight(); ++y)
+	{
+		for (int x = 0; x < GetWidth(); ++x)
+		{
+			// If there is a visible tile in that position
+			Texture2D* texture = _tiles->at(x).at(y)->_texture;
+			if (texture != nullptr)
+			{
+				// Draw it in screen space.
+				Vector2 position((float)x, (float)y);
+				position *= *Tile::_cSize;
+				SpriteBatch::Draw(texture, &position);
+			}
+		}
+	}
+}

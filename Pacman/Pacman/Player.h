@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Level.h"
+
 // If Windows and not in Debug, this will run without a console window
 // You can use this to output information when debugging using cout or cerr
 #ifdef WIN32 
@@ -20,6 +22,8 @@ using namespace S2D;
 class Player : public Game
 {
 private:
+	Level* _level;
+
 	// Data to represent Player
 	Vector2* _playerPosition;
 	Rect* _playerSourceRect;

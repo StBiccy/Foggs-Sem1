@@ -22,16 +22,15 @@ public:
 	Level();
 	~Level(void);
 
-	int GetHight();
+	int GetHeight();
 	int GetWidth();
 
 	void LoadTiles();
 	Tile* LoadTile(const char _tileType, int x, int y);
 	Tile* LoadTile(const char* name, tileCollision collision);
 	tileCollision GetCollision(int x, int y);
-	Rect GetBounds(int x, int y);
 
-	void Update(int elapsedTime);
+	//void Update(int elapsedTime);
 	void Draw(int elapsedTime);
 	void DrawTiles();
 };

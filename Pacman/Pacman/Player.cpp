@@ -57,6 +57,9 @@ void Player::LoadContent()
 	_stringPosition = new Vector2(10.0f, 25.0f);
 
 	_velocity = new Vector2(0, 0);
+
+	_level = new Level();
+
 }
 
 void Player::PhysicsUpdate(int elapsedTime)
@@ -64,6 +67,7 @@ void Player::PhysicsUpdate(int elapsedTime)
 	_velocity->Y = MathHelper::Clamp(_velocity->Y + _cGravity * elapsedTime ,-_cMaxFallSpeed, _cMaxFallSpeed);
 	_velocity->X = 0;
 	_playerPosition->Y += _velocity->Y;
+	
 }
 
 void Player::Update(int elapsedTime)
@@ -123,6 +127,7 @@ void Player::Draw(int elapsedTime)
 
 	SpriteBatch::BeginDraw(); // Starts Drawing
 	SpriteBatch::Draw(_playerTexture, _playerPosition, _playerSourceRect); // Draws Pacman
+	_level->Draw(elapsedTime);
 
 	if (_frameCount < 30)
 	{
