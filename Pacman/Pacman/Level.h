@@ -16,14 +16,22 @@ struct Tile;
 class Level
 {
 private:
-	vector<vector<Tile*>>* _tile;
+	vector<vector<Tile*>>* _tiles;
 
 public:
-	Level(int _levelIndex);
+	Level();
 	~Level(void);
 
-	void LoadTiles(int _levelIndex);
+	int GetHight();
+	int GetWidth();
+
+	void LoadTiles();
 	Tile* LoadTile(const char _tileType, int x, int y);
 	Tile* LoadTile(const char* name, tileCollision collision);
-	// rememeber you where here biccy
+	tileCollision GetCollision(int x, int y);
+	Rect GetBounds(int x, int y);
+
+	void Update(int elapsedTime);
+	void Draw(int elapsedTime);
+	void DrawTiles();
 };
