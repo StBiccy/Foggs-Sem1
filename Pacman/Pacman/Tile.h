@@ -6,22 +6,19 @@ using namespace S2D;
 
 enum class tileCollision
 {
-	Passable = 0,
-
-	Impassable = 1,
+	Normal = 0,
 };
 
 struct Tile
 {
 public:
 	Texture2D* _texture;
-	tileCollision _collision;
 
 	static const int _cWidth;
 	static const int _cHight;
 
 	static const Vector2* _cSize;
 
-	Tile(Texture2D* _Texture, tileCollision _Collision);
-	~Tile(void);
+	Tile(Texture2D* _Texture);
+	~Tile(void)
 };
