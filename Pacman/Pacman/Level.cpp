@@ -13,7 +13,7 @@ Level::Level()
 Level::~Level(void)
 {
 
-	// i need to figure out how this works
+	// i need to figure out how this works and wtf it's doing
 	for (vector<vector<Tile*>>::iterator it = _tiles->begin(); it != _tiles->end(); it++)
 	{
 		for (vector<Tile*>::iterator it2 = it->begin(); it2 != it->end(); it2 ++)

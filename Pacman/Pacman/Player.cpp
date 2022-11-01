@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-const float Player::_cGravity = 0.1f;
-const float Player::_cMaxFallSpeed = 1000;
+const float Player::_cGravity = 0.07f;
+const float Player::_cMaxFallSpeed = 100;
 
 Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 {
@@ -11,7 +11,7 @@ Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 	_paused = false;
 
 	//Initialise important Game aspects
-	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25, "MAX", 60);
+	Graphics::Initialise(argc, argv, this, 800, 800, false, 25, 25, "MAX", 60);
 	Input::Initialise();
 
 	// Start the Game Loop - This calls Update and Draw in game loop
@@ -72,7 +72,7 @@ void Player::PhysicsUpdate(int elapsedTime)
 
 void Player::Update(int elapsedTime)
 {
-	//PhysicsUpdate(elapsedTime);
+	PhysicsUpdate(elapsedTime);
 
 	// Gets the current state of the keyboard
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
