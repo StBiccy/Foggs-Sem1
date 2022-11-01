@@ -2,10 +2,11 @@
 
 #include <sstream>
 
-Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
+Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f), _cPlayerFrameTime(250)
 {
 	_frameCount = 0;
 	_paused = false;
+	
 
 	//Initialise important Game aspects
 	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25, "Pacman", 60);
@@ -31,6 +32,10 @@ void Player::LoadContent()
 	_playerTexture->Load("Textures/Pacman.tga", false);
 	_playerPosition = new Vector2(350.0f, 350.0f);
 	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
+	_playerCurrentFrameTime = 0;
+	_playerFrame = 0;
+	
+	//_playerDirection = 0;
 
 	// Load Munchie
 	_munchieBlueTexture = new Texture2D();
@@ -68,15 +73,46 @@ void Player::Update(int elapsedTime)
 	//stops player input if paused
 	if (!_paused)
 	{
-		// Checks if D key is pressed
-		if (keyboardState->IsKeyDown(Input::Keys::D))
-			_playerPosition->X += _cPlayerSpeed * elapsedTime; //Moves Pacman Towards the right
-		if (keyboardState->IsKeyDown(Input::Keys::A))
-			_playerPosition->X -= _cPlayerSpeed * elapsedTime; //Moves Pacman Towards the left
-		if (keyboardState->IsKeyDown(Input::Keys::W))
-			_playerPosition->Y -= _cPlayerSpeed * elapsedTime; //Moves Pacman upwards
 		if (keyboardState->IsKeyDown(Input::Keys::S))
-			_playerPosition->Y += _cPlayerSpeed * elapsedTime; //Moves Pacman downwards
+		{
+			_playerPosition->Y += _cPlayerSpeed * elapsedTime;
+			_playerDirection = 1;
+			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+		}
+		
+		else if (keyboardState->IsKeyDown(Input::Keys::A))
+		{
+			_playerPosition->X -= _cPlayerSpeed * elapsedTime;
+			_playerDirection = 2;
+			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+		}
+		else if (keyboardState->IsKeyDown(Input::Keys::W))
+		{
+			_playerPosition->Y -= _cPlayerSpeed * elapsedTime;
+			_playerDirection = 3;
+			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+		}
+		else if (keyboardState->IsKeyDown(Input::Keys::D))
+		{
+			_playerPosition->X += _cPlayerSpeed * elapsedTime;
+			_playerDirection = 0;
+			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+		}
+
+		_playerCurrentFrameTime += elapsedTime;
+
+		if (_playerCurrentFrameTime > _cPlayerFrameTime)
+		{
+			_playerFrame++;
+
+			if (_playerFrame >= 2)
+				_playerFrame = 0;
+
+			_playerCurrentFrameTime = 0;
+
+			_playerSourceRect->X = _playerSourceRect->Width * _playerFrame;
+		}
+		
 
 		// if the Player hits a wall it stops in place
 		if (_playerPosition->X > Graphics::GetViewportWidth() - 32) //Right wall
