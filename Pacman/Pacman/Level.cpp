@@ -37,7 +37,6 @@ int Level::GetHeight()
 
 void Level::LoadTiles()
 {
-	cout << "hi" << endl;
 
 	// all ik is this has something to do with loading the level
 	int _width;
@@ -98,11 +97,11 @@ Tile* Level::LoadTile(const char _tileType, int x, int y)
 	default:
 		return nullptr;
 	}
+//the texture loads the file using the string constructed in the stringstream.
+//re
 }
 
-//stringsream stors the file location as a string. 
-//the texture loads the file using the string constructed in the stringstream.
-//returns the with the texture and the tileCollision information that was passed down in the function's parameter
+//stringsream stors the file location as a string. turns the with the texture and the tileCollision information that was passed down in the function's parameter
 Tile* Level::LoadTile(const char* name, tileCollision collision)
 {
 	stringstream ss;
@@ -113,7 +112,7 @@ Tile* Level::LoadTile(const char* name, tileCollision collision)
 	return new Tile(tex, collision);
 }
 
-//remember where you were
+
 void Level::Draw(int elapsedTime)
 {
 	DrawTiles();
@@ -125,7 +124,7 @@ void Level::DrawTiles()
 	{
 		for (int x = 0; x < GetWidth(); ++x)
 		{
-			// If there is a visible tile in that position
+			// Checks if there is an assienged tile in the text file
 			Texture2D* texture = _tiles->at(x).at(y)->_texture;
 			if (texture != nullptr)
 			{
