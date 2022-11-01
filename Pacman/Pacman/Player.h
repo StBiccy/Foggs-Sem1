@@ -48,7 +48,7 @@ private:
 	bool _pKeyDown;
 
 public:
-	/// <summary> Constructs the Pacman class. </summary>
+		/// <summary> Constructs the Pacman class. </summary>
 	Player(int argc, char* argv[]);
 
 	/// <summary> Destroys any data associated with Pacman class. </summary>
@@ -56,6 +56,22 @@ public:
 
 	/// <summary> All content should be loaded in this method. </summary>
 	void virtual LoadContent();
+
+	/// <summary> Reads the input from the player </summary>
+	void Input(int elapsedTime, Input::KeyboardState* state);
+
+	/// <summary> Checks if game is paused </summary>
+	void CheckPaused(Input::KeyboardState* state, Input::Keys pauseKey);
+	
+	/// <summary> Checks if there is collision with the viewport </summary>
+	void CheckViewportCollision();
+
+	/// <summary> Updates the Player </summary>
+	void UpdatePlayer(int elapsedTime);
+
+	/// <summary> Updates the Munchie </summary>
+	void UpdateMunchie(int elapsedTime);
+
 
 	/// <summary> Called every frame - update game logic here. </summary>
 	void virtual Update(int elapsedTime);

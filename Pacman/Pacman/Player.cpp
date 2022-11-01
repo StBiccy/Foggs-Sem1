@@ -7,7 +7,7 @@ Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f), 
 	_frameCount = 0;
 	_paused = false;
 	
-
+	
 	//Initialise important Game aspects
 	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25, "Pacman", 60);
 	Input::Initialise();
@@ -57,82 +57,19 @@ void Player::LoadContent()
 
 void Player::Update(int elapsedTime)
 {
-	// Gets the current state of the keyboard
 	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
 
-	// pauses the game on the P input
-	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
-	{
-		_pKeyDown = true;
-		_paused = !_paused;
-	}
+	CheckPaused(keyboardState, Input::Keys::P);
 
-	if (keyboardState->IsKeyUp(Input::Keys::P))
-		_pKeyDown = false;
-
-	//stops player input if paused
 	if (!_paused)
 	{
-		if (keyboardState->IsKeyDown(Input::Keys::S))
-		{
-			_playerPosition->Y += _cPlayerSpeed * elapsedTime;
-			_playerDirection = 1;
-			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
-		}
-		
-		else if (keyboardState->IsKeyDown(Input::Keys::A))
-		{
-			_playerPosition->X -= _cPlayerSpeed * elapsedTime;
-			_playerDirection = 2;
-			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
-		}
-		else if (keyboardState->IsKeyDown(Input::Keys::W))
-		{
-			_playerPosition->Y -= _cPlayerSpeed * elapsedTime;
-			_playerDirection = 3;
-			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
-		}
-		else if (keyboardState->IsKeyDown(Input::Keys::D))
-		{
-			_playerPosition->X += _cPlayerSpeed * elapsedTime;
-			_playerDirection = 0;
-			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
-		}
-
-		_playerCurrentFrameTime += elapsedTime;
-
-		if (_playerCurrentFrameTime > _cPlayerFrameTime)
-		{
-			_playerFrame++;
-
-			if (_playerFrame >= 2)
-				_playerFrame = 0;
-
-			_playerCurrentFrameTime = 0;
-
-			_playerSourceRect->X = _playerSourceRect->Width * _playerFrame;
-		}
-		
-
-		// if the Player hits a wall it stops in place
-		if (_playerPosition->X > Graphics::GetViewportWidth() - 32) //Right wall
-			_playerPosition->X = Graphics::GetViewportWidth() - 32;
-
-		if (_playerPosition->X < 0) //Left wall
-			_playerPosition->X = 0;
-
-		if (_playerPosition->Y > Graphics::GetViewportHeight() - 32) //Bottom wall
-			_playerPosition->Y = Graphics::GetViewportHeight() - 32;
-
-		if (_playerPosition->Y < 0) //Top Wall
-			_playerPosition->Y = 0;
-
+		Input(elapsedTime, keyboardState);
+		UpdatePlayer(elapsedTime);
+		UpdateMunchie(elapsedTime);
+		CheckViewportCollision();
 
 		_frameCount++;
 	}
-		
-	
-
 }
 
 void Player::Draw(int elapsedTime)
@@ -174,4 +111,93 @@ void Player::Draw(int elapsedTime)
 	// Draws String
 	SpriteBatch::DrawString(stream.str().c_str(), _stringPosition, Color::Green);
 	SpriteBatch::EndDraw(); // Ends Drawing
+}
+
+void Player::UpdatePlayer(int elapsedTime)
+{
+	if (!_paused)
+	{
+		_playerCurrentFrameTime += elapsedTime;
+
+		if (_playerCurrentFrameTime > _cPlayerFrameTime)
+		{
+			_playerFrame++;
+
+			if (_playerFrame >= 2)
+				_playerFrame = 0;
+
+			_playerCurrentFrameTime = 0;
+
+			_playerSourceRect->X = _playerSourceRect->Width * _playerFrame;
+		}
+	}
+}
+
+void Player::UpdateMunchie(int elapsedTime)
+{
+
+}
+
+void Player::Input(int elapsedTime, Input::KeyboardState* state)
+{
+	if (!_paused)
+	{
+		if (state->IsKeyDown(Input::Keys::S))
+		{
+			_playerPosition->Y += _cPlayerSpeed * elapsedTime;
+			_playerDirection = 1;
+			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+		}
+
+		else if (state->IsKeyDown(Input::Keys::A))
+		{
+			_playerPosition->X -= _cPlayerSpeed * elapsedTime;
+			_playerDirection = 2;
+			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+		}
+		else if (state->IsKeyDown(Input::Keys::W))
+		{
+			_playerPosition->Y -= _cPlayerSpeed * elapsedTime;
+			_playerDirection = 3;
+			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+		}
+		else if (state->IsKeyDown(Input::Keys::D))
+		{
+			_playerPosition->X += _cPlayerSpeed * elapsedTime;
+			_playerDirection = 0;
+			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+		}
+	}
+}
+
+void Player::CheckPaused(Input::KeyboardState* state, Input::Keys pauseKey)
+{
+	// pauses the game on the P input
+	if (state->IsKeyDown(pauseKey) && !_pKeyDown)
+	{
+		_pKeyDown = true;
+		_paused = !_paused;
+	}
+
+	if (state->IsKeyUp(pauseKey))
+		_pKeyDown = false;
+}
+
+void Player::CheckViewportCollision()
+{
+	if (!_paused)
+	{
+		// if the Player hits a wall it stops in place
+		if (_playerPosition->X > Graphics::GetViewportWidth() - 32) //Right wall
+			_playerPosition->X = Graphics::GetViewportWidth() - 32;
+
+		if (_playerPosition->X < 0) //Left wall
+			_playerPosition->X = 0;
+
+		if (_playerPosition->Y > Graphics::GetViewportHeight() - 32) //Bottom wall
+			_playerPosition->Y = Graphics::GetViewportHeight() - 32;
+
+		if (_playerPosition->Y < 0) //Top Wall
+			_playerPosition->Y = 0;
+	}
 }
