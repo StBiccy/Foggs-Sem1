@@ -14,7 +14,7 @@
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
 
-
+// structure representing player data
 struct SPlayer
 {
 	Vector2* _position;
@@ -33,10 +33,9 @@ struct SPlayer
 class Player : public Game
 {
 private:
-	// Data to represent Player
-	SPlayer* _player;
 
 	// Data to represent Munchie
+	SPlayer* _player;
 	int _frameCount;
 	Rect* _munchieRect;
 	Texture2D* _munchieBlueTexture;

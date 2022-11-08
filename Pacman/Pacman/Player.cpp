@@ -6,14 +6,15 @@ Player::Player(int argc, char* argv[]) : Game(argc, argv)
 {
 	_frameCount = 0;
 	_paused = false;
-	
-	
+	_player = new SPlayer();
+	_player->_currentFrameTime = 0;
+	_player->_frame = 0;
+	_player->_frameTime = 250;
+	_player->_speed = 0.1f;
+
 	//Initialise important Game aspects
 	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25, "Pacman", 60);
 	Input::Initialise();
-
-	_player = new SPlayer();
-
 	// Start the Game Loop - This calls Update and Draw in game loop
 	Graphics::StartGameLoop();
 }
@@ -36,10 +37,6 @@ void Player::LoadContent()
 	_player->_texture->Load("Textures/Pacman.tga", false);
 	_player->_position = new Vector2(350.0f, 350.0f);
 	_player->_sourceRect = new Rect(0.0f, 0.0f, 32, 32);
-	_player->_currentFrameTime = 0;
-	_player->_frame = 0;
-	_player->_frameTime = 250;
-	_player->_speed = 0.1f;
 
 	
 	//_playerDirection = 0;
