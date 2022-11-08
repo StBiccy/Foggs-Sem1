@@ -12,28 +12,32 @@ Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f), 
 	Graphics::Initialise(argc, argv, this, 1024, 768, false, 25, 25, "Pacman", 60);
 	Input::Initialise();
 
+	_player = new SPlayer();
+
 	// Start the Game Loop - This calls Update and Draw in game loop
 	Graphics::StartGameLoop();
 }
 
 Player::~Player()
 {
-	delete _playerTexture;
-	delete _playerSourceRect;
+	delete _player->_texture;
+	delete _player->_sourceRect;
+	delete _player->_position;
 	delete _munchieBlueTexture;
 	delete _munchieInvertedTexture;
 	delete _munchieRect;
+	delete _player;
 }
 
 void Player::LoadContent()
 {
 	// Load Pacman
-	_playerTexture = new Texture2D();
-	_playerTexture->Load("Textures/Pacman.tga", false);
-	_playerPosition = new Vector2(350.0f, 350.0f);
-	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
-	_playerCurrentFrameTime = 0;
-	_playerFrame = 0;
+	_player->_texture = new Texture2D();
+	_player->_texture->Load("Textures/Pacman.tga", false);
+	_player->_position = new Vector2(350.0f, 350.0f);
+	_player->_sourceRect = new Rect(0.0f, 0.0f, 32, 32);
+	_player->_currentFrameTime = 0;
+	_player->_frame = 0;
 	
 	//_playerDirection = 0;
 
@@ -76,10 +80,10 @@ void Player::Draw(int elapsedTime)
 {
 	// Allows us to easily create a string
 	std::stringstream stream;
-	stream << "Pacman X: " << _playerPosition->X << " Y: " << _playerPosition->Y;
+	stream << "Pacman X: " << _player->_position->X << " Y: " << _player->_position->Y;
 
 	SpriteBatch::BeginDraw(); // Starts Drawing
-	SpriteBatch::Draw(_playerTexture, _playerPosition, _playerSourceRect); // Draws Pacman
+	SpriteBatch::Draw(_player->_texture, _player->_position, _player->_sourceRect); // Draws Pacman
 
 	if (_frameCount < 30)
 	{
@@ -117,18 +121,18 @@ void Player::UpdatePlayer(int elapsedTime)
 {
 	if (!_paused)
 	{
-		_playerCurrentFrameTime += elapsedTime;
+		_player->_currentFrameTime += elapsedTime;
 
-		if (_playerCurrentFrameTime > _cPlayerFrameTime)
+		if (_player->_currentFrameTime > _cPlayerFrameTime)
 		{
-			_playerFrame++;
+			_player->_frame++;
 
-			if (_playerFrame >= 2)
-				_playerFrame = 0;
+			if (_player->_frame >= 2)
+				_player->_frame = 0;
 
-			_playerCurrentFrameTime = 0;
+			_player->_currentFrameTime = 0;
 
-			_playerSourceRect->X = _playerSourceRect->Width * _playerFrame;
+			_player->_sourceRect->X = _player->_sourceRect->Width * _player->_frame;
 		}
 	}
 }
@@ -144,28 +148,28 @@ void Player::Input(int elapsedTime, Input::KeyboardState* state)
 	{
 		if (state->IsKeyDown(Input::Keys::S))
 		{
-			_playerPosition->Y += _cPlayerSpeed * elapsedTime;
-			_playerDirection = 1;
-			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+			_player->_position->Y += _cPlayerSpeed * elapsedTime;
+			_player->_direction = 1;
+			_player->_sourceRect->Y = _player->_sourceRect->Height * _player->_direction;
 		}
 
 		else if (state->IsKeyDown(Input::Keys::A))
 		{
-			_playerPosition->X -= _cPlayerSpeed * elapsedTime;
-			_playerDirection = 2;
-			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+			_player->_position->X -= _cPlayerSpeed * elapsedTime;
+			_player->_direction = 2;
+			_player->_sourceRect->Y = _player->_sourceRect->Height * _player->_direction;
 		}
 		else if (state->IsKeyDown(Input::Keys::W))
 		{
-			_playerPosition->Y -= _cPlayerSpeed * elapsedTime;
-			_playerDirection = 3;
-			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+			_player->_position->Y -= _cPlayerSpeed * elapsedTime;
+			_player->_direction = 3;
+			_player->_sourceRect->Y = _player->_sourceRect->Height * _player->_direction;
 		}
 		else if (state->IsKeyDown(Input::Keys::D))
 		{
-			_playerPosition->X += _cPlayerSpeed * elapsedTime;
-			_playerDirection = 0;
-			_playerSourceRect->Y = _playerSourceRect->Height * _playerDirection;
+			_player->_position->X += _cPlayerSpeed * elapsedTime;
+			_player->_direction = 0;
+			_player->_sourceRect->Y = _player->_sourceRect->Height * _player->_direction;
 		}
 	}
 }
@@ -188,16 +192,16 @@ void Player::CheckViewportCollision()
 	if (!_paused)
 	{
 		// if the Player hits a wall it stops in place
-		if (_playerPosition->X > Graphics::GetViewportWidth() - 32) //Right wall
-			_playerPosition->X = Graphics::GetViewportWidth() - 32;
+		if (_player->_position->X > Graphics::GetViewportWidth() - 32) //Right wall
+			_player->_position->X = Graphics::GetViewportWidth() - 32;
 
-		if (_playerPosition->X < 0) //Left wall
-			_playerPosition->X = 0;
+		if (_player->_position->X < 0) //Left wall
+			_player->_position->X = 0;
 
-		if (_playerPosition->Y > Graphics::GetViewportHeight() - 32) //Bottom wall
-			_playerPosition->Y = Graphics::GetViewportHeight() - 32;
+		if (_player->_position->Y > Graphics::GetViewportHeight() - 32) //Bottom wall
+			_player->_position->Y = Graphics::GetViewportHeight() - 32;
 
-		if (_playerPosition->Y < 0) //Top Wall
-			_playerPosition->Y = 0;
+		if (_player->_position->Y < 0) //Top Wall
+			_player->_position->Y = 0;
 	}
 }

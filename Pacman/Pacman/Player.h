@@ -14,6 +14,19 @@
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
 
+
+struct SPlayer
+{
+	Vector2* _position;
+	Rect* _sourceRect;
+	Texture2D _texture;
+	int _direction;
+	int _frame;
+	int _currentFrameTime;
+	float _speed;
+	int _frameTime;
+};
+
 // Declares the Pacman class which inherits from the Game class.
 // This allows us to overload the Game class methods to help us
 // load content, draw and update our game.
@@ -21,14 +34,7 @@ class Player : public Game
 {
 private:
 	// Data to represent Player
-	Vector2* _playerPosition;
-	Rect* _playerSourceRect;
-	Texture2D* _playerTexture;
-	const float _cPlayerSpeed;
-	int _playerDirection;
-	int _playerFrame;
-	int _playerCurrentFrameTime;
-	const int _cPlayerFrameTime;
+	SPlayer* _player;
 
 	// Data to represent Munchie
 	int _frameCount;
