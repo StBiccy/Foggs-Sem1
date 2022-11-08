@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f), _cPlayerFrameTime(250)
+Player::Player(int argc, char* argv[]) : Game(argc, argv)
 {
 	_frameCount = 0;
 	_paused = false;
@@ -23,10 +23,10 @@ Player::~Player()
 	delete _player->_texture;
 	delete _player->_sourceRect;
 	delete _player->_position;
+	delete _player;
 	delete _munchieBlueTexture;
 	delete _munchieInvertedTexture;
 	delete _munchieRect;
-	delete _player;
 }
 
 void Player::LoadContent()
@@ -38,6 +38,9 @@ void Player::LoadContent()
 	_player->_sourceRect = new Rect(0.0f, 0.0f, 32, 32);
 	_player->_currentFrameTime = 0;
 	_player->_frame = 0;
+	_player->_frameTime = 250;
+	_player->_speed = 0.1f;
+
 	
 	//_playerDirection = 0;
 
@@ -123,7 +126,7 @@ void Player::UpdatePlayer(int elapsedTime)
 	{
 		_player->_currentFrameTime += elapsedTime;
 
-		if (_player->_currentFrameTime > _cPlayerFrameTime)
+		if (_player->_currentFrameTime > _player->_frameTime)
 		{
 			_player->_frame++;
 
@@ -148,26 +151,26 @@ void Player::Input(int elapsedTime, Input::KeyboardState* state)
 	{
 		if (state->IsKeyDown(Input::Keys::S))
 		{
-			_player->_position->Y += _cPlayerSpeed * elapsedTime;
+			_player->_position->Y += _player->_speed * elapsedTime;
 			_player->_direction = 1;
 			_player->_sourceRect->Y = _player->_sourceRect->Height * _player->_direction;
 		}
 
 		else if (state->IsKeyDown(Input::Keys::A))
 		{
-			_player->_position->X -= _cPlayerSpeed * elapsedTime;
+			_player->_position->X -= _player->_speed * elapsedTime;
 			_player->_direction = 2;
 			_player->_sourceRect->Y = _player->_sourceRect->Height * _player->_direction;
 		}
 		else if (state->IsKeyDown(Input::Keys::W))
 		{
-			_player->_position->Y -= _cPlayerSpeed * elapsedTime;
+			_player->_position->Y -= _player->_speed * elapsedTime;
 			_player->_direction = 3;
 			_player->_sourceRect->Y = _player->_sourceRect->Height * _player->_direction;
 		}
 		else if (state->IsKeyDown(Input::Keys::D))
 		{
-			_player->_position->X += _cPlayerSpeed * elapsedTime;
+			_player->_position->X += _player->_speed * elapsedTime;
 			_player->_direction = 0;
 			_player->_sourceRect->Y = _player->_sourceRect->Height * _player->_direction;
 		}

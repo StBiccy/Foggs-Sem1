@@ -19,7 +19,7 @@ struct SPlayer
 {
 	Vector2* _position;
 	Rect* _sourceRect;
-	Texture2D _texture;
+	Texture2D* _texture;
 	int _direction;
 	int _frame;
 	int _currentFrameTime;
