@@ -11,9 +11,7 @@ Level::Level()
 }
 
 Level::~Level(void)
-{
-
-	// i need to figure out how this works and wtf it's doing
+{	
 	for (vector<vector<Tile*>>::iterator it = _tiles->begin(); it != _tiles->end(); it++)
 	{
 		for (vector<Tile*>::iterator it2 = it->begin(); it2 != it->end(); it2 ++)
@@ -21,7 +19,6 @@ Level::~Level(void)
 			delete *it2;
 		}
 	}
-
 	delete _tiles;
 }
 
@@ -35,10 +32,9 @@ int Level::GetHeight()
 	return _tiles->at(0).size();
 }
 
+// this assigness the width and hight by the size of the text again 
 void Level::LoadTiles()
 {
-
-	// all ik is this has something to do with loading the level
 	int _width;
 	vector<string>* _lines = new vector<string>();
 	fstream _stream;
@@ -61,14 +57,11 @@ void Level::LoadTiles()
 	delete [] _line;
 	delete _sline;
 
-	//_tiles has the first vector set to that of the width 
-	// //(i feel this should mean the width of the grid but idk)
-	// 
-	//the second vector is set to the size of _lines 
-	//(i feel this should mean hight but idk rn)
+	//_tiles has the first vector set to that of the width, through the use of the _width value which represents the ammout of characters in the first row.
+	//the second vector is set to the size of _lines which represensts the ammout of lines in the text file.
 	_tiles = new vector<vector<Tile*>>(_width, vector<Tile*>(_lines->size()));
 
-	// this loops over every tile position
+	// this loops over every tile position and sets the character found there as the char _tileType
 	for (int y = 0; y < GetHeight(); ++y)
 	{
 		for (int x = 0; x < GetWidth(); x++)
@@ -80,7 +73,6 @@ void Level::LoadTiles()
 
 	delete _lines;
 }
-
 
 //check what type of tile is being held in the _tileType value
 Tile* Level::LoadTile(const char _tileType, int x, int y)
@@ -97,8 +89,6 @@ Tile* Level::LoadTile(const char _tileType, int x, int y)
 	default:
 		return nullptr;
 	}
-//the texture loads the file using the string constructed in the stringstream.
-//re
 }
 
 //stringsream stors the file location as a string. turns the with the texture and the tileCollision information that was passed down in the function's parameter
@@ -112,6 +102,22 @@ Tile* Level::LoadTile(const char* name, tileCollision collision)
 	return new Tile(tex, collision);
 }
 
+Rect Level::GetBounds(int x, int y)
+{
+	return Rect((float)(x * Tile::_cWidth), (float)(y * Tile::_cHeight), Tile::_cWidth, Tile::_cHeight);
+}
+
+tileCollision Level::GetCollision(int x, int y)
+{
+	// Prevent escaping past the level ends.
+	if (x < 0 || x >= GetWidth())
+		return tileCollision::Passable;
+	// Allow jumping past the level top and falling through the bottom.
+	if (y < 0 || y >= GetHeight())
+		return tileCollision::Passable;
+
+	return _tiles->at(x).at(y)->_collision;
+}
 
 void Level::Draw(int elapsedTime)
 {

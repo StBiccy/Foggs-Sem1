@@ -1,4 +1,6 @@
 #include "Player.h"
+#include "RectExtensions.h"
+#include <iostream>
 
 #include <sstream>
 
@@ -7,7 +9,6 @@ const float Player::_cMaxFallSpeed = 100;
 
 Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 {
-	_frameCount = 0;
 	_paused = false;
 
 	//Initialise important Game aspects
@@ -22,9 +23,6 @@ Player::~Player()
 {
 	delete _playerTexture;
 	delete _playerSourceRect;
-	delete _munchieBlueTexture;
-	delete _munchieInvertedTexture;
-	delete _munchieRect;
 	delete _menuBackground;
 	delete _menuRectangle;
 
@@ -39,15 +37,7 @@ void Player::LoadContent()
 	_playerPosition = new Vector2(350.0f, 350.0f);
 	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
 
-	// Load Munchie
-	_munchieBlueTexture = new Texture2D();
-	_munchieBlueTexture->Load("Content/Textures/Munchie.tga", true);
-	_munchieInvertedTexture = new Texture2D();
-	_munchieInvertedTexture->Load("Content/Textures/MunchieInverted.tga", true);
-	_munchieRect = new Rect(100.0f, 450.0f, 12, 12);
-
 	//Set menu Paramters
-
 	_menuBackground = new Texture2D();
 	_menuBackground->Load("Content/Textures/Transparency.PNG", false);
 	_menuRectangle = new Rect(0.0f, 0.0f, Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
@@ -59,35 +49,74 @@ void Player::LoadContent()
 	_velocity = new Vector2(0, 0);
 
 	_level = new Level();
-
 }
 
 void Player::PhysicsUpdate(int elapsedTime)
 {
-	_velocity->Y = MathHelper::Clamp(_velocity->Y + _cGravity * elapsedTime ,-_cMaxFallSpeed, _cMaxFallSpeed);
-	_velocity->X = 0;
-	_playerPosition->Y += _velocity->Y;
+	//_velocity->Y = MathHelper::Clamp(_velocity->Y + _cGravity * elapsedTime ,-_cMaxFallSpeed, _cMaxFallSpeed);
+	//_velocity->X = 0;
+	//_playerPosition->Y += _velocity->Y;
 	
+	CollisionHandeler();
 }
 
-void Player::Update(int elapsedTime)
+Rect Player::GetBoundingRect()
 {
-	PhysicsUpdate(elapsedTime);
+	return Rect(_playerPosition->X, _playerPosition->Y, _playerSourceRect->Width, _playerSourceRect->Height);
+}
 
-	// Gets the current state of the keyboard
-	Input::KeyboardState* keyboardState = Input::Keyboard::GetState();
+void Player::CollisionHandeler()
+{
 
-	// pauses the game on the P input
-	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
+	Rect _bounds = GetBoundingRect();
+	int _leftTile = (int)floorf((float)_bounds.Left() / Tile::_cWidth);
+	int _rightTile = (int)ceilf(((float)_bounds.Right() / Tile::_cWidth)) - 1;
+	int _topTile = (int)floorf((float)_bounds.Top() / Tile::_cHeight);
+	int _bottomTile = (int)ceilf(((float)_bounds.Bottom() / Tile::_cHeight)) - 1;
+
+	for (int y = _topTile; y <= _bottomTile; ++y)
 	{
-		_pKeyDown = true;
-		_paused = !_paused;
+		for (int x = _leftTile; x <= _rightTile; ++x)
+		{
+			tileCollision _collision = _level->GetCollision(x, y);
+			if (_collision != tileCollision::Passable)
+			{
+				Rect _tileBounds = _level->GetBounds(x,y);
+				Vector2 _depth = RectangleExtensions::GetInersectionDepth(&_bounds, &_tileBounds);
+				if(_depth != *Vector2::Zero)
+				{
+					float _absDepthX = abs(_depth.X);
+					float _absDepthY = abs(_depth.Y);
+					std::cout << _absDepthY;
+					if (_absDepthY < _absDepthX)
+					{
+
+						if (_collision == tileCollision::Impassable)
+						{
+							_playerPosition = new Vector2(_playerPosition->X, _playerPosition->Y + _depth.Y);
+
+							_bounds = GetBoundingRect();
+						}
+					}
+					else if (_collision == tileCollision::Impassable)
+					{
+						_playerPosition = new Vector2(_playerPosition->X + _depth.X, _playerPosition->Y);
+
+
+						_bounds = GetBoundingRect();
+
+					}
+
+				}
+			}
+		}
 	}
 
-	if (keyboardState->IsKeyUp(Input::Keys::P))
-		_pKeyDown = false;
+	_previousBottom = _bounds.Bottom();
+}
 
-	//stops player input if paused
+void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
+{
 	if (!_paused)
 	{
 		// Checks if D key is pressed
@@ -112,11 +141,24 @@ void Player::Update(int elapsedTime)
 
 		//if (_playerPosition->Y < 0) //Top Wall
 			//_playerPosition->Y = 0;
-
-
-		_frameCount++;
 	}
 
+	// pauses the game on the P input
+	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
+	{
+		_pKeyDown = true;
+		_paused = !_paused;
+	}
+
+	if (keyboardState->IsKeyUp(Input::Keys::P))
+		_pKeyDown = false;
+}
+
+void Player::Update(int elapsedTime)
+{
+	PhysicsUpdate(elapsedTime);
+
+	PlayerInput(Input::Keyboard::GetState(), elapsedTime);
 }
 
 void Player::Draw(int elapsedTime)
@@ -128,23 +170,6 @@ void Player::Draw(int elapsedTime)
 	SpriteBatch::BeginDraw(); // Starts Drawing
 	SpriteBatch::Draw(_playerTexture, _playerPosition, _playerSourceRect); // Draws Pacman
 	_level->Draw(elapsedTime);
-
-	if (_frameCount < 30)
-	{
-		// Draws Red Munchie
-		SpriteBatch::Draw(_munchieInvertedTexture, _munchieRect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
-
-		
-	}
-	else
-	{
-		// Draw Blue Munchie
-		SpriteBatch::Draw(_munchieBlueTexture, _munchieRect, nullptr, Vector2::Zero, 1.0f, 0.0f, Color::White, SpriteEffect::NONE);
-		
-
-		if (_frameCount >= 60)
-			_frameCount = 0;
-	}
 
 	// Draws the pause menu when _paused is true
 	if(_paused)

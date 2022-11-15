@@ -18,7 +18,7 @@ public:
 	tileCollision _collision;
 
 	static const int _cWidth;
-	static const int _cHight;
+	static const int _cHeight;
 
 	static const Vector2* _cSize;
 

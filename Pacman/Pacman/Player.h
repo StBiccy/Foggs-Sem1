@@ -30,11 +30,6 @@ private:
 	Texture2D* _playerTexture;
 	const float _cPlayerSpeed;
 
-	// Data to represent Munchie
-	int _frameCount;
-	Rect* _munchieRect;
-	Texture2D* _munchieBlueTexture;
-	Texture2D* _munchieInvertedTexture;
 
 	// Data to represent pause/start menu
 	Texture2D* _menuBackground;
@@ -52,6 +47,7 @@ private:
 	static const float _cGravity;
 	static const float _cMaxFallSpeed;
 
+	float _previousBottom;
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>
@@ -65,8 +61,10 @@ public:
 
 	/// <summary> All content should be loaded in this method. </summary>
 	void virtual LoadContent();
-
 	void virtual Update(int elapsedTime);
 	void virtual Draw(int elapsedTime);
-	void virtual PhysicsUpdate(int elapsedTime);
+	void PhysicsUpdate(int elapsedTime);
+	void CollisionHandeler();
+	Rect GetBoundingRect();
+	void PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime);
 };

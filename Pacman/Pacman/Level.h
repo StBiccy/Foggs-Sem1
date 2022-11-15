@@ -28,6 +28,7 @@ public:
 	void LoadTiles();
 	Tile* LoadTile(const char _tileType, int x, int y);
 	Tile* LoadTile(const char* name, tileCollision collision);
+	Rect GetBounds(int x, int y);
 	tileCollision GetCollision(int x, int y);
 
 	//void Update(int elapsedTime);
