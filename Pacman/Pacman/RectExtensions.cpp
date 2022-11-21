@@ -12,7 +12,7 @@ namespace RectangleExtensions
 		float halfWidthB = rectB->Height / 2.0f;
 
 		Vector2* CenterA = new Vector2(rectA->Left() + halfWidthA, rectA->Top() + halfHeightA);
-		Vector2* CenterB = new Vector2(rectA->Left() + halfWidthB, rectA->Top() + halfHeightB);
+		Vector2* CenterB = new Vector2(rectB->Left() + halfWidthB, rectB->Top() + halfHeightB);
 
 		float distanceX = CenterA->X - CenterB->X;
 		float distanceY = CenterA->Y - CenterB->Y;

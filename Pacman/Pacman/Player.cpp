@@ -67,52 +67,53 @@ Rect Player::GetBoundingRect()
 
 void Player::CollisionHandeler()
 {
-
 	Rect _bounds = GetBoundingRect();
 	int _leftTile = (int)floorf((float)_bounds.Left() / Tile::_cWidth);
 	int _rightTile = (int)ceilf(((float)_bounds.Right() / Tile::_cWidth)) - 1;
 	int _topTile = (int)floorf((float)_bounds.Top() / Tile::_cHeight);
 	int _bottomTile = (int)ceilf(((float)_bounds.Bottom() / Tile::_cHeight)) - 1;
-
+	
 	for (int y = _topTile; y <= _bottomTile; ++y)
 	{
 		for (int x = _leftTile; x <= _rightTile; ++x)
 		{
 			tileCollision _collision = _level->GetCollision(x, y);
-			if (_collision != tileCollision::Passable)
 			{
-				Rect _tileBounds = _level->GetBounds(x,y);
-				Vector2 _depth = RectangleExtensions::GetInersectionDepth(&_bounds, &_tileBounds);
-				if(_depth != *Vector2::Zero)
+				if (_collision != tileCollision::Passable)
 				{
-					float _absDepthX = abs(_depth.X);
-					float _absDepthY = abs(_depth.Y);
-					std::cout << _absDepthY;
-					if (_absDepthY < _absDepthX)
+					Rect _tileBounds = _level->GetBounds(x, y);
+					Vector2 _depth = RectangleExtensions::GetInersectionDepth(&_bounds, &_tileBounds);
+					if (_depth != *Vector2::Zero)
 					{
+						float absDepthX = abs(_depth.X);
+						float absDepthY = abs(_depth.Y);
 
-						if (_collision == tileCollision::Impassable)
+						// Resolve the collision along the shallow axis.
+						if (absDepthY < absDepthX)
 						{
-							_playerPosition = new Vector2(_playerPosition->X, _playerPosition->Y + _depth.Y);
+							// Ignore platforms, unless we are on the ground.
+							if (_collision == tileCollision::Impassable)
+							{
+								// Resolve the collision along the Y axis.
+								_playerPosition = new Vector2(_playerPosition->X, _playerPosition->Y + _depth.Y);
 
+								// Perform further collisions with the new bounds.
+								_bounds = GetBoundingRect();
+							}
+						}
+						else if (_collision == tileCollision::Impassable) // Ignore platforms.
+						{
+							// Resolve the collision along the X axis.
+							_playerPosition = new Vector2(_playerPosition->X + _depth.X, _playerPosition->Y);
+
+							// Perform further collisions with the new bounds.
 							_bounds = GetBoundingRect();
 						}
 					}
-					else if (_collision == tileCollision::Impassable)
-					{
-						_playerPosition = new Vector2(_playerPosition->X + _depth.X, _playerPosition->Y);
-
-
-						_bounds = GetBoundingRect();
-
-					}
-
 				}
 			}
 		}
 	}
-
-	_previousBottom = _bounds.Bottom();
 }
 
 void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
