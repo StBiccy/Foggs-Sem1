@@ -30,24 +30,33 @@ private:
 	Texture2D* _playerTexture;
 	const float _cPlayerSpeed;
 
-
 	// Data to represent pause/start menu
 	Texture2D* _menuBackground;
-	Rect * _menuRectangle;
+	Rect* _menuRectangle;
 	Vector2* _menuStringPosition;
 	bool _paused;
 
 	// Position for String
 	Vector2* _stringPosition;
 
+	// input checks
 	bool _pKeyDown;
-	
+	bool _spaceKeyDown;
+
+
 	// Physics values
 	Vector2* _velocity;
 	static const float _cGravity;
 	static const float _cMaxFallSpeed;
+	bool _grounded;
+	bool _canMove;
+	float _preBottom;
 
-	float _previousBottom;
+	// Jump values
+	float _jumpValue;
+	bool _windJump;
+	bool _jump;
+	static const float _cMaxJumpValue;
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>

@@ -111,7 +111,7 @@ tileCollision Level::GetCollision(int x, int y)
 {
 	// Prevent escaping past the level ends.
 	if (x < 0 || x >= GetWidth())
-		return tileCollision::Passable;
+		return tileCollision::Impassable;
 	// Allow jumping past the level top and falling through the bottom.
 	if (y < 0 || y >= GetHeight())
 		return tileCollision::Passable;
