@@ -130,7 +130,6 @@ void Player::CollisionHandeler()
 							_canMove = true;
 						}
 
-
 						if (_collision == tileCollision::Impassable)
 						{
 							_playerPosition = new Vector2(_playerPosition->X, _playerPosition->Y + _depth.Y);
@@ -141,10 +140,11 @@ void Player::CollisionHandeler()
 							}
 						}
 					}
-					else if (_collision == tileCollision::Impassable)
+					else if (_collision == tileCollision::Impassable && _absDepthY > _absDepthX)
 					{
 						_playerPosition = new Vector2(_playerPosition->X + _depth.X, _playerPosition->Y);
 						_bounds = GetBoundingRect();
+
 						if (!_grounded)
 						{
 							_velocity->X = -_velocity->X;
