@@ -29,6 +29,7 @@ private:
 	Rect* _playerSourceRect;
 	Texture2D* _playerTexture;
 	const float _cPlayerSpeed;
+	short unsigned int _direction;
 
 	// Data to represent pause/start menu
 	Texture2D* _menuBackground;
@@ -54,7 +55,6 @@ private:
 
 	// Jump values
 	float _jumpValue;
-	bool _windJump;
 	bool _jump;
 	static const float _cMaxJumpValue;
 

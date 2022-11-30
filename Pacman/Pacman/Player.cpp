@@ -6,14 +6,14 @@
 
 const float Player::_cGravity = 0.02f;
 const float Player::_cMaxFallSpeed = 20;
-const float Player::_cMaxJumpValue = 13;
+const float Player::_cMaxJumpValue = 12;
 
-Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.2f)
+Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 {
 	_paused = false;
 
 	//Initialise important Game aspects
-	Graphics::Initialise(argc, argv, this, 800, 800, false, 25, 25, "Funny Name", 60);
+	Graphics::Initialise(argc, argv, this, 480, 480, false, 25, 25, "Funny Name", 60);
 	Input::Initialise();
 
 	// Start the Game Loop - This calls Update and Draw in game loop
@@ -34,9 +34,10 @@ void Player::LoadContent()
 {
 	// Load Pacman
 	_playerTexture = new Texture2D();
-	_playerTexture->Load("Content/Textures/Pacman.tga", false);
+	_playerTexture->Load("Content/Textures/JumpKing.png", false);
 	_playerPosition = new Vector2(350.0f, 350.0f);
 	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
+	_direction = 1;
 
 	//Set menu Paramters
 	_menuBackground = new Texture2D();
@@ -45,7 +46,6 @@ void Player::LoadContent()
 	_menuStringPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f, Graphics::GetViewportHeight() / 2.0f);
 
 	_jump = false;
-	_windJump = false;
 
 	// Set string position
 	_stringPosition = new Vector2(10.0f, 25.0f);
@@ -137,6 +137,7 @@ void Player::CollisionHandeler()
 							if (!_grounded)
 							{
 								_velocity->Y = -_velocity->Y/2;
+								_playerSourceRect = new Rect(64, 32 + _direction, 32, 32);
 							}
 						}
 					}
@@ -148,6 +149,7 @@ void Player::CollisionHandeler()
 						if (!_grounded)
 						{
 							_velocity->X = -_velocity->X;
+							_playerSourceRect = new Rect(64, 32 + _direction, 32, 32);
 						}
 					}
 
@@ -165,9 +167,17 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 	{
 		// Checks if D key is pressed
 		if (keyboardState->IsKeyDown(Input::Keys::D))
+		{
 			_velocity->X = _cPlayerSpeed * elapsedTime; //Moves Pacman Towards the right
+			_direction = 0;
+			_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
+		}
 		else if (keyboardState->IsKeyDown(Input::Keys::A))
+		{
 			_velocity->X = -_cPlayerSpeed * elapsedTime;
+			_direction = 64;
+			_playerSourceRect = new Rect(0.0f, 64, 32, 32);
+		}
 		else
 			_velocity->X = 0;
 	}
@@ -190,21 +200,18 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 			if (_jumpValue < _cMaxJumpValue)
 			{
 				_jumpValue += 1;
-				_windJump = true;
 				_velocity->X = 0;
-
+				_playerSourceRect = new Rect(0.0f, 128, 32, 32);
 			}
 			else
 			{
 				_jumpValue = _cMaxJumpValue;
-				_windJump = false;
 				_jump = true;
 			}
 		}
 		if (keyboardState->IsKeyUp(Input::Keys::SPACE))
 		{
 			_jump = true;
-			_windJump = false;
 			_spaceKeyDown = false;
 		}
 	}
