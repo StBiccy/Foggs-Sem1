@@ -24,6 +24,16 @@ class Player : public Game
 private:
 	Level* _level;
 
+	// Data to represent animation
+	bool _walking;
+	bool _jumping;
+	float _preTop;
+	int _walkFrame;
+	float _walkFrameTime;
+	bool _hitWall;
+	int _wallHitDelay;
+	float _jumpAnimDelay;
+
 	// Data to represent Player
 	Vector2* _playerPosition;
 	Rect* _playerSourceRect;
@@ -65,9 +75,6 @@ public:
 	/// <summary> Destroys any data associated with Pacman class. </summary>
 	virtual ~Player();
 
-	//void SetVelocity(Vector2 velocity);
-	//Vector2* GetVelocity();
-
 	/// <summary> All content should be loaded in this method. </summary>
 	void virtual LoadContent();
 	void virtual Update(int elapsedTime);
@@ -76,4 +83,5 @@ public:
 	void CollisionHandeler();
 	Rect GetBoundingRect();
 	void PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime);
+	void PlayerAnim(int elapsedTime);
 };

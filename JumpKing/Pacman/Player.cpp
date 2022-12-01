@@ -32,12 +32,19 @@ Player::~Player()
 
 void Player::LoadContent()
 {
-	// Load Pacman
+	// animation
+	_hitWall = false;
+	_walking = false;
+	_jumping = false;
+	_walkFrameTime = 0;
+	_walkFrame = 1;
+	_direction = 0;
+
+	// Load Jump King
 	_playerTexture = new Texture2D();
 	_playerTexture->Load("Content/Textures/JumpKing.png", false);
 	_playerPosition = new Vector2(350.0f, 350.0f);
 	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
-	_direction = 1;
 
 	//Set menu Paramters
 	_menuBackground = new Texture2D();
@@ -58,6 +65,7 @@ void Player::LoadContent()
 
 void Player::PhysicsUpdate(int elapsedTime)
 {
+
 	if (!_grounded)
 	{
 		_velocity->Y = MathHelper::Clamp(_velocity->Y + _cGravity * elapsedTime, -_cMaxFallSpeed, _cMaxFallSpeed);
@@ -130,14 +138,15 @@ void Player::CollisionHandeler()
 							_canMove = true;
 						}
 
+
 						if (_collision == tileCollision::Impassable)
 						{
 							_playerPosition = new Vector2(_playerPosition->X, _playerPosition->Y + _depth.Y);
 							_bounds = GetBoundingRect();
 							if (!_grounded)
 							{
-								_velocity->Y = -_velocity->Y/2;
-								_playerSourceRect = new Rect(64, 32 + _direction, 32, 32);
+								_velocity->Y = -_velocity->Y / 2;
+								_hitWall = true;
 							}
 						}
 					}
@@ -149,7 +158,7 @@ void Player::CollisionHandeler()
 						if (!_grounded)
 						{
 							_velocity->X = -_velocity->X;
-							_playerSourceRect = new Rect(64, 32 + _direction, 32, 32);
+							_hitWall = true;
 						}
 					}
 
@@ -158,6 +167,13 @@ void Player::CollisionHandeler()
 		}
 	}
 
+	if (_grounded && _hitWall)
+	{
+		_hitWall = false;
+		_wallHitDelay = 0;
+	}
+
+	_preTop = _bounds.Top();
 	_preBottom = _bounds.Bottom();
 }
 
@@ -170,16 +186,19 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 		{
 			_velocity->X = _cPlayerSpeed * elapsedTime; //Moves Pacman Towards the right
 			_direction = 0;
-			_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
+			_walking = true;
 		}
 		else if (keyboardState->IsKeyDown(Input::Keys::A))
 		{
 			_velocity->X = -_cPlayerSpeed * elapsedTime;
-			_direction = 64;
-			_playerSourceRect = new Rect(0.0f, 64, 32, 32);
+			_direction = 2;
+			_walking = true;
 		}
 		else
+		{
+			_walking = false;
 			_velocity->X = 0;
+		}
 	}
 
 
@@ -201,27 +220,72 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 			{
 				_jumpValue += 1;
 				_velocity->X = 0;
-				_playerSourceRect = new Rect(0.0f, 128, 32, 32);
 			}
 			else
 			{
+				_jumping = true;
 				_jumpValue = _cMaxJumpValue;
 				_jump = true;
 			}
 		}
-		if (keyboardState->IsKeyUp(Input::Keys::SPACE))
+		if (keyboardState->IsKeyUp(Input::Keys::SPACE) && _grounded)
 		{
+			_jumping = true;
 			_jump = true;
 			_spaceKeyDown = false;
 		}
 	}
 }
 
+void Player::PlayerAnim(int elapsedTime)
+{
+	if (_grounded && !_walking && !_spaceKeyDown)
+	{
+		_playerSourceRect->X = 0;
+		_playerSourceRect->Y = _playerSourceRect->Height * _direction;
+
+	}
+	if (_walking && _grounded && !_spaceKeyDown)
+	{
+		_walkFrameTime++;
+
+		if (_walkFrameTime == 8)
+		{
+			_walkFrame++;
+			_playerSourceRect->Y = _playerSourceRect->Height * _direction;
+
+			if (_walkFrame > 4)
+				_walkFrame = 1;
+
+			if (_walkFrame < 4)
+				_playerSourceRect->X = _playerSourceRect->Width * _walkFrame;
+			else if (_walkFrame = 4)
+				_playerSourceRect->X = _playerSourceRect->Width * (_walkFrame - 2);
+
+			_walkFrameTime = 0;
+		}
+	}
+	else if (!_grounded && _hitWall)
+	{
+		_wallHitDelay++;
+		if (_wallHitDelay > 2)
+		{
+			_playerSourceRect->Y = _playerSourceRect->Height + _playerSourceRect->Height * _direction;
+			_playerSourceRect->X = _playerSourceRect->Width * 2;
+		}
+	}
+	else if (_grounded && _spaceKeyDown)
+	{
+		_playerSourceRect->Y = _playerSourceRect->Height * 4;
+		_playerSourceRect->X = 0;
+	}
+}
+
 void Player::Update(int elapsedTime)
 {
 	PhysicsUpdate(elapsedTime);
-
 	PlayerInput(Input::Keyboard::GetState(), elapsedTime);
+	PlayerAnim(elapsedTime);
 }
 
 void Player::Draw(int elapsedTime)
