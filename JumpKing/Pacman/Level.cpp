@@ -32,7 +32,7 @@ int Level::GetHeight()
 	return _tiles->at(0).size();
 }
 
-// this assigness the width and hight by the size of the text again 
+// this assigness the width and hight by the size of the text
 void Level::LoadTiles()
 {
 	int _width;

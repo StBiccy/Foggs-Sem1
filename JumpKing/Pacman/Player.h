@@ -31,7 +31,7 @@ private:
 	int _walkFrame;
 	float _walkFrameTime;
 	bool _hitWall;
-	int _wallHitDelay;
+	int _wallHitDelayAnim;
 	float _jumpAnimDelay;
 
 	// Data to represent Player
@@ -54,7 +54,6 @@ private:
 	bool _pKeyDown;
 	bool _spaceKeyDown;
 
-
 	// Physics values
 	Vector2* _velocity;
 	static const float _cGravity;
@@ -64,9 +63,20 @@ private:
 	float _preBottom;
 
 	// Jump values
+	static const float _cHorizontalJumpVel;
 	float _jumpValue;
 	bool _jump;
 	static const float _cMaxJumpValue;
+
+	// Sound effects
+	SoundEffect* _jumpSFX;
+	SoundEffect* _landSFX;
+	SoundEffect* _hitWallSFX;
+	int _lastGroundedTime;
+	int _wallHitDelaySound;
+	bool _hitWallCheck;
+
+
 
 public:
 	/// <summary> Constructs the Pacman class. </summary>
@@ -83,5 +93,5 @@ public:
 	void CollisionHandeler();
 	Rect GetBoundingRect();
 	void PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime);
-	void PlayerAnim(int elapsedTime);
+	void PlayerAnim();
 };

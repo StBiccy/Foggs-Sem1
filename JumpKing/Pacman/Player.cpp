@@ -6,14 +6,17 @@
 
 const float Player::_cGravity = 0.02f;
 const float Player::_cMaxFallSpeed = 20;
-const float Player::_cMaxJumpValue = 12;
+const float Player::_cMaxJumpValue = 11;
+const float Player::_cHorizontalJumpVel = 2;
+
 
 Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 {
 	_paused = false;
 
 	//Initialise important Game aspects
-	Graphics::Initialise(argc, argv, this, 480, 480, false, 25, 25, "Funny Name", 60);
+	Audio::Initialise();
+	Graphics::Initialise(argc, argv, this, 480, 480, false, 25, 25, "Babe of the the void", 60);
 	Input::Initialise();
 
 	// Start the Game Loop - This calls Update and Draw in game loop
@@ -22,6 +25,10 @@ Player::Player(int argc, char* argv[]) : Game(argc, argv), _cPlayerSpeed(0.1f)
 
 Player::~Player()
 {
+	
+	delete _jumpSFX;
+	delete _hitWallSFX;
+	delete _landSFX;
 	delete _playerTexture;
 	delete _playerSourceRect;
 	delete _menuBackground;
@@ -60,7 +67,28 @@ void Player::LoadContent()
 	_velocity = new Vector2(0, 0);
 	_grounded = false;
 
+	// Load soundFX
+	_landSFX = new SoundEffect();
+	_landSFX->Load("Content/Sounds/Land.wav");
+	_jumpSFX = new SoundEffect();
+	_jumpSFX->Load("Content/Sounds/Jump.wav");
+	_hitWallSFX= new SoundEffect();
+	_hitWallSFX->Load("Content/Sounds/HitWall.wav");
+
+
+	_lastGroundedTime = 0;
+
+
 	_level = new Level();
+	
+	if (!Audio::IsInitialised)
+	{
+		std::cout << "audio not initialsiesed" << std::endl;
+	}
+	if (!_landSFX->IsLoaded())
+	{
+		std::cout << "land not loaded" << std::endl;
+	}
 }
 
 void Player::PhysicsUpdate(int elapsedTime)
@@ -75,18 +103,83 @@ void Player::PhysicsUpdate(int elapsedTime)
 		_velocity->Y = 0;
 	}
 
-	
 	if (_jump)
 	{
+		Audio::Play(_jumpSFX);
 		_velocity->Y -= _jumpValue;
 		_jump = false;
 		_jumpValue = 0;
+		_velocity->X *= _cHorizontalJumpVel;
 	}
 
 	_playerPosition->Y += _velocity->Y;
 	_playerPosition->X += _velocity->X;
 
 	CollisionHandeler();
+}
+
+void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
+{
+	if (!_paused && _canMove)
+	{
+		// Checks if D key is pressed
+		if (keyboardState->IsKeyDown(Input::Keys::D))
+		{
+			_velocity->X = _cPlayerSpeed * elapsedTime; //Moves Pacman Towards the right
+			_direction = 0;
+			_walking = true;
+		}
+		else if (keyboardState->IsKeyDown(Input::Keys::A))
+		{
+			_velocity->X = -_cPlayerSpeed * elapsedTime;
+			_direction = 2;
+			_walking = true;
+		}
+		else
+		{
+			_walking = false;
+			_velocity->X = 0;
+		}
+
+		if (_grounded)
+		{
+			if (keyboardState->IsKeyDown(Input::Keys::SPACE))
+			{
+				_spaceKeyDown = true;
+				if (_jumpValue < _cMaxJumpValue)
+				{
+					_jumpValue += 0.8f;
+					_velocity->X = 0;
+				}
+				else
+				{
+					_jumping = true;
+					_jumpValue = _cMaxJumpValue;
+					_jump = true;
+					_spaceKeyDown = false;
+				}
+			}
+
+			if (_spaceKeyDown && _grounded && keyboardState->IsKeyUp(Input::Keys::SPACE))
+			{
+				_jumping = true;
+				_jump = true;
+				_spaceKeyDown = false;
+			}
+		}
+	}
+
+
+	// pauses the game on the P input
+	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
+	{
+		_pKeyDown = true;
+		_paused = !_paused;
+	}
+	if (keyboardState->IsKeyUp(Input::Keys::P))
+		_pKeyDown = false;
+
+	
 }
 
 Rect Player::GetBoundingRect()
@@ -136,6 +229,7 @@ void Player::CollisionHandeler()
 						{
 							_grounded = true;
 							_canMove = true;
+
 						}
 
 
@@ -147,6 +241,8 @@ void Player::CollisionHandeler()
 							{
 								_velocity->Y = -_velocity->Y / 2;
 								_hitWall = true;
+								_hitWallCheck = true;
+
 							}
 						}
 					}
@@ -159,6 +255,8 @@ void Player::CollisionHandeler()
 						{
 							_velocity->X = -_velocity->X;
 							_hitWall = true;
+							_hitWallCheck = true;
+
 						}
 					}
 
@@ -169,75 +267,17 @@ void Player::CollisionHandeler()
 
 	if (_grounded && _hitWall)
 	{
+		_hitWallCheck = false;
+		_wallHitDelaySound = 0;
 		_hitWall = false;
-		_wallHitDelay = 0;
+		_wallHitDelayAnim = 0;
 	}
 
 	_preTop = _bounds.Top();
 	_preBottom = _bounds.Bottom();
 }
 
-void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
-{
-	if (!_paused && _canMove)
-	{
-		// Checks if D key is pressed
-		if (keyboardState->IsKeyDown(Input::Keys::D))
-		{
-			_velocity->X = _cPlayerSpeed * elapsedTime; //Moves Pacman Towards the right
-			_direction = 0;
-			_walking = true;
-		}
-		else if (keyboardState->IsKeyDown(Input::Keys::A))
-		{
-			_velocity->X = -_cPlayerSpeed * elapsedTime;
-			_direction = 2;
-			_walking = true;
-		}
-		else
-		{
-			_walking = false;
-			_velocity->X = 0;
-		}
-	}
-
-
-	// pauses the game on the P input
-	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
-	{
-		_pKeyDown = true;
-		_paused = !_paused;
-	}
-	if (keyboardState->IsKeyUp(Input::Keys::P))
-		_pKeyDown = false;
-
-	if (_grounded)
-	{
-		if (keyboardState->IsKeyDown(Input::Keys::SPACE))
-		{
-			_spaceKeyDown = true;
-			if (_jumpValue < _cMaxJumpValue)
-			{
-				_jumpValue += 1;
-				_velocity->X = 0;
-			}
-			else
-			{
-				_jumping = true;
-				_jumpValue = _cMaxJumpValue;
-				_jump = true;
-			}
-		}
-		if (keyboardState->IsKeyUp(Input::Keys::SPACE) && _grounded)
-		{
-			_jumping = true;
-			_jump = true;
-			_spaceKeyDown = false;
-		}
-	}
-}
-
-void Player::PlayerAnim(int elapsedTime)
+void Player::PlayerAnim()
 {
 	if (_grounded && !_walking && !_spaceKeyDown)
 	{
@@ -245,11 +285,11 @@ void Player::PlayerAnim(int elapsedTime)
 		_playerSourceRect->Y = _playerSourceRect->Height * _direction;
 
 	}
-	if (_walking && _grounded && !_spaceKeyDown)
+	else if (_walking && _grounded && !_spaceKeyDown)
 	{
 		_walkFrameTime++;
 
-		if (_walkFrameTime == 8)
+		if (_walkFrameTime == 6)
 		{
 			_walkFrame++;
 			_playerSourceRect->Y = _playerSourceRect->Height * _direction;
@@ -267,8 +307,8 @@ void Player::PlayerAnim(int elapsedTime)
 	}
 	else if (!_grounded && _hitWall)
 	{
-		_wallHitDelay++;
-		if (_wallHitDelay > 2)
+		_wallHitDelayAnim++;
+		if (_wallHitDelayAnim > 2)
 		{
 			_playerSourceRect->Y = _playerSourceRect->Height + _playerSourceRect->Height * _direction;
 			_playerSourceRect->X = _playerSourceRect->Width * 2;
@@ -279,13 +319,47 @@ void Player::PlayerAnim(int elapsedTime)
 		_playerSourceRect->Y = _playerSourceRect->Height * 4;
 		_playerSourceRect->X = 0;
 	}
+	else if (!_grounded && _velocity->Y < 0)
+	{
+		_playerSourceRect->Y = _playerSourceRect->Height + _playerSourceRect->Height * _direction;
+		_playerSourceRect->X = _playerSourceRect->Width * 0;
+	}
+	else if (!_grounded && _velocity->Y > 0)
+	{
+		_playerSourceRect->Y = _playerSourceRect->Height + _playerSourceRect->Height * _direction;
+		_playerSourceRect->X = _playerSourceRect->Width * 1;
+	}
 }
 
 void Player::Update(int elapsedTime)
 {
 	PhysicsUpdate(elapsedTime);
 	PlayerInput(Input::Keyboard::GetState(), elapsedTime);
-	PlayerAnim(elapsedTime);
+	PlayerAnim();
+
+	if (!_grounded && _hitWallCheck)
+	{
+		_wallHitDelaySound++;
+		if (_wallHitDelaySound > 2)
+		{
+			Audio::Play(_hitWallSFX);
+			_wallHitDelaySound = 0;
+			_hitWallCheck = false;
+		}
+	}
+	if (!_grounded)
+	{
+		_lastGroundedTime++;
+	}
+	else if (_grounded && _lastGroundedTime > 2)
+	{
+		Audio::Play(_landSFX);
+		_lastGroundedTime = 0;
+	}
+	else
+	{
+		_lastGroundedTime = 0;
+	}
 }
 
 void Player::Draw(int elapsedTime)
