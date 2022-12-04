@@ -24,6 +24,8 @@ class Player : public Game
 private:
 	Level* _level;
 
+	int _currentScene;
+
 	// Data to represent animation
 	bool _walking;
 	bool _jumping;

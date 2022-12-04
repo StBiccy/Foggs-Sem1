@@ -75,6 +75,7 @@ void Player::LoadContent()
 	_hitWallSFX= new SoundEffect();
 	_hitWallSFX->Load("Content/Sounds/HitWall.wav");
 
+	_currentScene = 1;
 
 	_lastGroundedTime = 0;
 
@@ -184,7 +185,8 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 
 Rect Player::GetBoundingRect()
 {
-	return Rect(_playerPosition->X, _playerPosition->Y, _playerSourceRect->Width, _playerSourceRect->Height);
+	int camYPos = _currentScene * 480;
+	return Rect(_playerPosition->X, _playerPosition->Y+camYPos, _playerSourceRect->Width, _playerSourceRect->Height);
 }
 
 void Player::CollisionHandeler()
@@ -336,6 +338,17 @@ void Player::Update(int elapsedTime)
 	PhysicsUpdate(elapsedTime);
 	PlayerInput(Input::Keyboard::GetState(), elapsedTime);
 	PlayerAnim();
+
+	if (_playerPosition->Y < 0)
+	{
+		--_currentScene;
+		_playerPosition->Y = 480;
+	}
+	if (_playerPosition->Y > 480)
+	{
+		++_currentScene;
+		_playerPosition->Y = 0;
+	}
 
 	if (!_grounded && _hitWallCheck)
 	{

@@ -17,10 +17,12 @@ class Level
 {
 private:
 	vector<vector<Tile*>>* _tiles;
+	Rect* _camera;
 
 public:
 	Level();
 	~Level(void);
+
 
 	int GetHeight();
 	int GetWidth();
@@ -31,7 +33,13 @@ public:
 	Rect GetBounds(int x, int y);
 	tileCollision GetCollision(int x, int y);
 
-	//void Update(int elapsedTime);
+	int GetBoundBottom();
+	int GetBoundTop();
+
+	int CameraTop();
+	int CameraBottom();
+
+	void virtual LoadContent();
 	void Draw(int elapsedTime);
 	void DrawTiles();
 };

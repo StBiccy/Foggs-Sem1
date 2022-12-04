@@ -8,10 +8,17 @@
 Level::Level()
 {
 	LoadTiles();
+	LoadContent();
+}
+
+void Level::LoadContent()
+{
+	_camera = new Rect(0.0f, 480.0f,480, 480);
 }
 
 Level::~Level(void)
 {	
+	delete _camera;
 	for (vector<vector<Tile*>>::iterator it = _tiles->begin(); it != _tiles->end(); it++)
 	{
 		for (vector<Tile*>::iterator it2 = it->begin(); it2 != it->end(); it2 ++)
@@ -21,6 +28,8 @@ Level::~Level(void)
 	}
 	delete _tiles;
 }
+
+
 
 int Level::GetWidth()
 {
@@ -32,6 +41,15 @@ int Level::GetHeight()
 	return _tiles->at(0).size();
 }
 
+int Level::GetBoundBottom()
+{
+	return (_camera->Y + _camera->Height) / 32;
+}
+
+int Level::GetBoundTop()
+{
+	return _camera->Y / 32;
+}
 // this assigness the width and hight by the size of the text
 void Level::LoadTiles()
 {
@@ -113,10 +131,30 @@ tileCollision Level::GetCollision(int x, int y)
 	if (x < 0 || x >= GetWidth())
 		return tileCollision::Impassable;
 	// Allow jumping past the level top and falling through the bottom.
-	if (y < 0 || y >= GetHeight())
+	if (y < GetBoundTop()) 
+	{
+		_camera->Y -= 480;
 		return tileCollision::Passable;
+	}
+	if (y >= GetBoundBottom())
+	{
+		_camera->Y += 480;
+		return tileCollision::Passable;
+	}
 
 	return _tiles->at(x).at(y)->_collision;
+}
+
+int Level::CameraTop()
+{
+	int topPos = _camera->Y/ 32;
+	return topPos;
+}
+
+int Level::CameraBottom()
+{
+	int bottomPos = ((_camera->Y) + _camera->Height) / 32;
+	return bottomPos;
 }
 
 void Level::Draw(int elapsedTime)
@@ -126,7 +164,7 @@ void Level::Draw(int elapsedTime)
 
 void Level::DrawTiles()
 {
-	for (int y = 0; y < GetHeight(); ++y)
+	for (int y = CameraTop(); y < CameraBottom(); ++y)
 	{
 		for (int x = 0; x < GetWidth(); ++x)
 		{
@@ -135,7 +173,9 @@ void Level::DrawTiles()
 			if (texture != nullptr)
 			{
 				// Draw it in screen space.
-				Vector2 position((float)x, (float)y);
+				float yDraw;
+				yDraw = y - _camera->Y/32;
+				Vector2 position((float)x, yDraw);
 				position *= *Tile::_cSize;
 				SpriteBatch::Draw(texture, &position);
 			}
