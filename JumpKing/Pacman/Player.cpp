@@ -39,6 +39,7 @@ Player::~Player()
 
 void Player::LoadContent()
 {
+
 	// animation
 	_hitWall = false;
 	_walking = false;
@@ -50,7 +51,8 @@ void Player::LoadContent()
 	// Load Jump King
 	_playerTexture = new Texture2D();
 	_playerTexture->Load("Content/Textures/JumpKing.png", false);
-	_playerPosition = new Vector2(350.0f, 350.0f);
+	//_playerPosition = new Vector2(32.0f, 416.0f);
+	_playerPosition = new Vector2(240.0f, 240.0f);
 	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
 
 	//Set menu Paramters
@@ -179,8 +181,6 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 	}
 	if (keyboardState->IsKeyUp(Input::Keys::P))
 		_pKeyDown = false;
-
-	
 }
 
 Rect Player::GetBoundingRect()
@@ -339,12 +339,12 @@ void Player::Update(int elapsedTime)
 	PlayerInput(Input::Keyboard::GetState(), elapsedTime);
 	PlayerAnim();
 
-	if (_playerPosition->Y < 0)
+	if (_playerPosition->Y <= -32)
 	{
 		--_currentScene;
-		_playerPosition->Y = 480;
+		_playerPosition->Y = 448;
 	}
-	if (_playerPosition->Y > 480)
+	if (_playerPosition->Y >= 480)
 	{
 		++_currentScene;
 		_playerPosition->Y = 0;

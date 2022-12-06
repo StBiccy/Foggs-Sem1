@@ -39,7 +39,7 @@ public:
 	int CameraTop();
 	int CameraBottom();
 
-	void virtual LoadContent();
+	void LoadContent();
 	void Draw(int elapsedTime);
 	void DrawTiles();
 };
