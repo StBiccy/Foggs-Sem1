@@ -12,6 +12,7 @@
 
 // Just need to include main header file
 #include "S2D/S2D.h"
+#include <fstream>;
 
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
@@ -25,6 +26,9 @@ private:
 	Level* _level;
 
 	int _currentScene;
+
+	ifstream recallSave;
+	ofstream sendSave;
 
 	// Data to represent animation
 	bool _walking;

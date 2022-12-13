@@ -51,8 +51,7 @@ void Player::LoadContent()
 	// Load Jump King
 	_playerTexture = new Texture2D();
 	_playerTexture->Load("Content/Textures/JumpKing.png", false);
-	//_playerPosition = new Vector2(32.0f, 416.0f);
-	_playerPosition = new Vector2(240.0f, 240.0f);
+	_playerPosition = new Vector2(32.0f, 416.0f);
 	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
 
 	//Set menu Paramters
@@ -77,12 +76,21 @@ void Player::LoadContent()
 	_hitWallSFX= new SoundEffect();
 	_hitWallSFX->Load("Content/Sounds/HitWall.wav");
 
-	_currentScene = 0;
+	_currentScene = 5;
 
 	_lastGroundedTime = 0;
 
 
 	_level = new Level();
+
+	recallSave.open("Save");
+	if(recallSave.is_open())
+	{
+		recallSave >> _playerPosition->X;
+		recallSave >> _playerPosition->Y;
+		recallSave >> _currentScene;
+
+	}
 	
 	if (!Audio::IsInitialised)
 	{
@@ -172,7 +180,14 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 		}
 	}
 
+	if (_grounded&& keyboardState->IsKeyDown (Input::Keys::S))
+	{
+		sendSave.open("Save");
 
+		sendSave << _playerPosition->X << endl<< _playerPosition->Y << endl << _currentScene;
+
+		sendSave.close();
+	}
 	// pauses the game on the P input
 	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
 	{
@@ -335,52 +350,51 @@ void Player::PlayerAnim()
 
 void Player::Update(int elapsedTime)
 {
-	PhysicsUpdate(elapsedTime);
 	PlayerInput(Input::Keyboard::GetState(), elapsedTime);
-	PlayerAnim();
 
-	if (_playerPosition->Y <= -32)
+	if (!_paused)
 	{
-		--_currentScene;
-		_playerPosition->Y = 448;
-	}
-	if (_playerPosition->Y >= 480)
-	{
-		++_currentScene;
-		_playerPosition->Y = 0;
-	}
-
-	if (!_grounded && _hitWallCheck)
-	{
-		_wallHitDelaySound++;
-		if (_wallHitDelaySound > 2)
+		PlayerAnim();
+		PhysicsUpdate(elapsedTime);
+		if (_playerPosition->Y <= -32)
 		{
-			Audio::Play(_hitWallSFX);
-			_wallHitDelaySound = 0;
-			_hitWallCheck = false;
+			--_currentScene;
+			_playerPosition->Y = 448;
 		}
-	}
-	if (!_grounded)
-	{
-		_lastGroundedTime++;
-	}
-	else if (_grounded && _lastGroundedTime > 2)
-	{
-		Audio::Play(_landSFX);
-		_lastGroundedTime = 0;
-	}
-	else
-	{
-		_lastGroundedTime = 0;
+		if (_playerPosition->Y >= 480)
+		{
+			++_currentScene;
+			_playerPosition->Y = 0;
+		}
+
+		if (!_grounded && _hitWallCheck)
+		{
+			_wallHitDelaySound++;
+			if (_wallHitDelaySound > 2)
+			{
+				Audio::Play(_hitWallSFX);
+				_wallHitDelaySound = 0;
+				_hitWallCheck = false;
+			}
+		}
+		if (!_grounded)
+		{
+			_lastGroundedTime++;
+		}
+		else if (_grounded && _lastGroundedTime > 2)
+		{
+			Audio::Play(_landSFX);
+			_lastGroundedTime = 0;
+		}
+		else
+		{
+			_lastGroundedTime = 0;
+		}
 	}
 }
 
 void Player::Draw(int elapsedTime)
 {
-	// Allows us to easily create a string
-	std::stringstream stream;
-	stream << "Player X: " << _playerPosition->X << " Y: " << _playerPosition->Y;
-
 	SpriteBatch::BeginDraw(); // Starts Drawing
 	SpriteBatch::Draw(_playerTexture, _playerPosition, _playerSourceRect); // Draws Pacman
 	_level->Draw(elapsedTime);
@@ -395,8 +409,6 @@ void Player::Draw(int elapsedTime)
 		SpriteBatch::DrawString(menuStream.str().c_str(), _menuStringPosition, Color::Red);
 	}
 
-	// Draws String
-	SpriteBatch::DrawString(stream.str().c_str(), _stringPosition, Color::Green);
 	SpriteBatch::EndDraw(); // Ends Drawing
 
 }
