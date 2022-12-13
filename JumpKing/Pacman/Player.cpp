@@ -77,7 +77,7 @@ void Player::LoadContent()
 	_hitWallSFX= new SoundEffect();
 	_hitWallSFX->Load("Content/Sounds/HitWall.wav");
 
-	_currentScene = 1;
+	_currentScene = 0;
 
 	_lastGroundedTime = 0;
 
