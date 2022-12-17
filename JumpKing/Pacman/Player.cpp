@@ -40,13 +40,10 @@ Player::~Player()
 void Player::LoadContent()
 {
 
-	// Set up animation values
+	// animation
 	_hitWall = false;
 	_walking = false;
 	_jumping = false;
-	_faceFlat = false;
-	_fallTimer = 0;
-	_standUpDelay = 0;
 	_walkFrameTime = 0;
 	_walkFrame = 1;
 	_direction = 0;
@@ -56,8 +53,6 @@ void Player::LoadContent()
 	_playerTexture->Load("Content/Textures/JumpKing.png", false);
 	_playerPosition = new Vector2(32.0f, 416.0f);
 	_playerSourceRect = new Rect(0.0f, 0.0f, 32, 32);
-	_velocity = new Vector2(0, 0);
-
 
 	//Set menu Paramters
 	_menuBackground = new Texture2D();
@@ -65,8 +60,12 @@ void Player::LoadContent()
 	_menuRectangle = new Rect(0.0f, 0.0f, Graphics::GetViewportWidth(), Graphics::GetViewportHeight());
 	_menuStringPosition = new Vector2(Graphics::GetViewportWidth() / 2.0f, Graphics::GetViewportHeight() / 2.0f);
 
-	// Set up physics checks
 	_jump = false;
+
+	// Set string position
+	_stringPosition = new Vector2(10.0f, 25.0f);
+
+	_velocity = new Vector2(0, 0);
 	_grounded = false;
 
 	// Load soundFX
@@ -77,28 +76,35 @@ void Player::LoadContent()
 	_hitWallSFX= new SoundEffect();
 	_hitWallSFX->Load("Content/Sounds/HitWall.wav");
 
-	// Set up defualt start scene scene
 	_currentScene = 5;
-
 
 	_lastGroundedTime = 0;
 
 
 	_level = new Level();
 
-	// Reads last save file
-	_recallSave.open("Save");
-	if(_recallSave.is_open())
+	recallSave.open("Save");
+	if(recallSave.is_open())
 	{
-		_recallSave >> _playerPosition->X;
-		_recallSave >> _playerPosition->Y;
-		_recallSave >> _currentScene;
+		recallSave >> _playerPosition->X;
+		recallSave >> _playerPosition->Y;
+		recallSave >> _currentScene;
+
+	}
+	
+	if (!Audio::IsInitialised)
+	{
+		std::cout << "audio not initialsiesed" << std::endl;
+	}
+	if (!_landSFX->IsLoaded())
+	{
+		std::cout << "land not loaded" << std::endl;
 	}
 }
 
 void Player::PhysicsUpdate(int elapsedTime)
 {
-	// Applies Gravity
+
 	if (!_grounded)
 	{
 		_velocity->Y = MathHelper::Clamp(_velocity->Y + _cGravity * elapsedTime, -_cMaxFallSpeed, _cMaxFallSpeed);
@@ -108,16 +114,15 @@ void Player::PhysicsUpdate(int elapsedTime)
 		_velocity->Y = 0;
 	}
 
-	// starts a jump
 	if (_jump)
 	{
+		Audio::Play(_jumpSFX);
 		_velocity->Y -= _jumpValue;
 		_jump = false;
 		_jumpValue = 0;
 		_velocity->X *= _cHorizontalJumpVel;
 	}
 
-	// Applies velocity to the players position;
 	_playerPosition->Y += _velocity->Y;
 	_playerPosition->X += _velocity->X;
 
@@ -126,37 +131,31 @@ void Player::PhysicsUpdate(int elapsedTime)
 
 void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 {
-	// chekcs if the game is paused and the player is grounded.
-	if (!_paused && _grounded)
+	if (!_paused && _canMove)
 	{
-		// Checks if the player has a stand up delay
-		if (_standUpDelay < 0)
+		// Checks if D key is pressed
+		if (keyboardState->IsKeyDown(Input::Keys::D))
 		{
-			// Applies Vectical movement to the player if A/D is held.
-			if (keyboardState->IsKeyDown(Input::Keys::D))
-			{
-				_velocity->X = _cPlayerSpeed * elapsedTime;
-				_direction = 0;
-				_walking = true;
-				_faceFlat = false;
-			}
-			else if (keyboardState->IsKeyDown(Input::Keys::A))
-			{
-				_velocity->X = -_cPlayerSpeed * elapsedTime;
-				_direction = 2;
-				_walking = true;
-				_faceFlat = false;
-			}
-			else
-			{
-				_walking = false;
-				_velocity->X = 0;
-			}
+			_velocity->X = _cPlayerSpeed * elapsedTime; //Moves Pacman Towards the right
+			_direction = 0;
+			_walking = true;
+		}
+		else if (keyboardState->IsKeyDown(Input::Keys::A))
+		{
+			_velocity->X = -_cPlayerSpeed * elapsedTime;
+			_direction = 2;
+			_walking = true;
+		}
+		else
+		{
+			_walking = false;
+			_velocity->X = 0;
+		}
 
-			// If space is held then it loads a jump untill either the player lets go of space or the jump value reaches it's max value.
+		if (_grounded)
+		{
 			if (keyboardState->IsKeyDown(Input::Keys::SPACE))
 			{
-				_faceFlat = false;
 				_spaceKeyDown = true;
 				if (_jumpValue < _cMaxJumpValue)
 				{
@@ -171,33 +170,25 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 					_spaceKeyDown = false;
 				}
 			}
-		}
-		else
-		{
-			// stops the player in the x axis and winds dow the stand up delay
-			_standUpDelay -= (float)elapsedTime / 1000;
-			_velocity->X = 0;
-		}
-		// checks if the player let go of space and applies the related cehcks
-		if (_spaceKeyDown && _grounded && keyboardState->IsKeyUp(Input::Keys::SPACE))
-		{
-			_jumping = true;
-			_jump = true;
-			_spaceKeyDown = false;
+
+			if (_spaceKeyDown && _grounded && keyboardState->IsKeyUp(Input::Keys::SPACE))
+			{
+				_jumping = true;
+				_jump = true;
+				_spaceKeyDown = false;
+			}
 		}
 	}
 
-	// Saves the game when S is pressed and the player is grounded.
-	if (_grounded && keyboardState->IsKeyDown (Input::Keys::S))
+	if (_grounded&& keyboardState->IsKeyDown (Input::Keys::S))
 	{
-		_sendSave.open("Save");
+		sendSave.open("Save");
 
-		_sendSave << _playerPosition->X << endl<< _playerPosition->Y << endl << _currentScene;
+		sendSave << _playerPosition->X << endl<< _playerPosition->Y << endl << _currentScene;
 
-		_sendSave.close();
+		sendSave.close();
 	}
-
-	// pauses the game when p is pressed, and unpauses if p is pressed again.
+	// pauses the game on the P input
 	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
 	{
 		_pKeyDown = true;
@@ -209,7 +200,6 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 
 Rect Player::GetBoundingRect()
 {
-	// Finds the players position relitive to the current scene the player is on
 	int camYPos = _currentScene * 480;
 	return Rect(_playerPosition->X, _playerPosition->Y+camYPos, _playerSourceRect->Width, _playerSourceRect->Height);
 }
@@ -224,6 +214,7 @@ void Player::CollisionHandeler()
 	int _bottomTile = (int)ceilf(((float)_bounds.Bottom() / Tile::_cHeight)) - 1;
 
 	_grounded = false;
+	_canMove = false;
 
 
 	// loop through all Tiles around player
@@ -251,26 +242,27 @@ void Player::CollisionHandeler()
 					// will push player back from the resulting side
 					if (_absDepthY < _absDepthX)
 					{
-						// If the space bellow the player is the same space bellow them bellow them last frame then they are grounded
 						if (_preBottom <= _tileBounds.Bottom())
 						{
 							_grounded = true;
+							_canMove = true;
+
 						}
 
-						// If the player hits an impassable object on the Y axis then the get pushed out of it and rebouned in the opposing direction
+
 						if (_collision == tileCollision::Impassable)
 						{
 							_playerPosition = new Vector2(_playerPosition->X, _playerPosition->Y + _depth.Y);
 							_bounds = GetBoundingRect();
 							if (!_grounded)
 							{
-								_velocity->Y = -_velocity->Y;
+								_velocity->Y = -_velocity->Y / 2;
 								_hitWall = true;
 								_hitWallCheck = true;
+
 							}
 						}
 					}
-					// if the player hits an impassable object in the X axis then they get pushed out of it and rebounded in the opposing direction
 					else if (_collision == tileCollision::Impassable && _absDepthY > _absDepthX)
 					{
 						_playerPosition = new Vector2(_playerPosition->X + _depth.X, _playerPosition->Y);
@@ -290,7 +282,6 @@ void Player::CollisionHandeler()
 		}
 	}
 
-	// Resets hit wall checks if the player is grounded
 	if (_grounded && _hitWall)
 	{
 		_hitWallCheck = false;
@@ -299,19 +290,19 @@ void Player::CollisionHandeler()
 		_wallHitDelayAnim = 0;
 	}
 
-	// Finds the previouse space bellow the player
+	_preTop = _bounds.Top();
 	_preBottom = _bounds.Bottom();
 }
 
 void Player::PlayerAnim()
 {
-	if (_grounded && !_walking && !_spaceKeyDown && !_faceFlat)
+	if (_grounded && !_walking && !_spaceKeyDown)
 	{
 		_playerSourceRect->X = 0;
 		_playerSourceRect->Y = _playerSourceRect->Height * _direction;
 
 	}
-	else if (_walking && _grounded && !_spaceKeyDown && !_faceFlat)
+	else if (_walking && _grounded && !_spaceKeyDown)
 	{
 		_walkFrameTime++;
 
@@ -331,7 +322,7 @@ void Player::PlayerAnim()
 			_walkFrameTime = 0;
 		}
 	}
-	else if (!_grounded && _hitWall && !_faceFlat)
+	else if (!_grounded && _hitWall)
 	{
 		_wallHitDelayAnim++;
 		if (_wallHitDelayAnim > 2)
@@ -340,56 +331,20 @@ void Player::PlayerAnim()
 			_playerSourceRect->X = _playerSourceRect->Width * 2;
 		}
 	}
-	else if (_grounded && _spaceKeyDown && !_faceFlat)
+	else if (_grounded && _spaceKeyDown)
 	{
 		_playerSourceRect->Y = _playerSourceRect->Height * 4;
 		_playerSourceRect->X = 0;
 	}
-	else if (!_grounded && _velocity->Y < 0 && !_faceFlat)
+	else if (!_grounded && _velocity->Y < 0)
 	{
 		_playerSourceRect->Y = _playerSourceRect->Height + _playerSourceRect->Height * _direction;
 		_playerSourceRect->X = _playerSourceRect->Width * 0;
 	}
-	else if (!_grounded && _velocity->Y > 0 && !_faceFlat)
+	else if (!_grounded && _velocity->Y > 0)
 	{
 		_playerSourceRect->Y = _playerSourceRect->Height + _playerSourceRect->Height * _direction;
 		_playerSourceRect->X = _playerSourceRect->Width * 1;
-	}
-	else if (_faceFlat && _grounded)
-	{
-		_playerSourceRect->Y = _playerSourceRect->Height + _playerSourceRect->Height * _direction;
-		_playerSourceRect->X = _playerSourceRect->Width * 3;
-	}
-}
-
-void Player::PlayerSound()
-{
-	if (_jump)
-	{
-		Audio::Play(_jumpSFX);
-	}
-	if (!_grounded && _hitWallCheck)
-	{
-		_wallHitDelaySound++;
-		if (_wallHitDelaySound > 2)
-		{
-			Audio::Play(_hitWallSFX);
-			_wallHitDelaySound = 0;
-			_hitWallCheck = false;
-		}
-	}
-	if (!_grounded)
-	{
-		_lastGroundedTime++;
-	}
-	else if (_grounded && _lastGroundedTime > 2)
-	{
-		Audio::Play(_landSFX);
-		_lastGroundedTime = 0;
-	}
-	else
-	{
-		_lastGroundedTime = 0;
 	}
 }
 
@@ -397,24 +352,10 @@ void Player::Update(int elapsedTime)
 {
 	PlayerInput(Input::Keyboard::GetState(), elapsedTime);
 
-	// stops anything running if the game is paused to imitate the effect of no the world being freezed.
 	if (!_paused)
 	{
-		PlayerSound();
-		PhysicsUpdate(elapsedTime);
 		PlayerAnim();
-
-		// If the player is falling then it checks if the are going to fall face flat.
-		if (!_grounded && _velocity->Y >= 0)
-		{
-			FaceFlatCheck(elapsedTime);
-		}
-		else 
-		{
-			_fallTimer = 0;
-		}
-
-		//Cheks if player is entering a new scene or not, and assigns the player possiton and current scene accordingly.
+		PhysicsUpdate(elapsedTime);
 		if (_playerPosition->Y <= -32)
 		{
 			--_currentScene;
@@ -425,27 +366,38 @@ void Player::Update(int elapsedTime)
 			++_currentScene;
 			_playerPosition->Y = 0;
 		}
-	}
-}
 
-void Player::FaceFlatCheck(int elapsedTime)
-{
-	// fallTimer represent the time spent falling in seconds.
-	_fallTimer += (float)elapsedTime / 1000;
-
-	if (_fallTimer >= 0.75)
-	{
-		_standUpDelay = .5f;
-		_faceFlat = true;
+		if (!_grounded && _hitWallCheck)
+		{
+			_wallHitDelaySound++;
+			if (_wallHitDelaySound > 2)
+			{
+				Audio::Play(_hitWallSFX);
+				_wallHitDelaySound = 0;
+				_hitWallCheck = false;
+			}
+		}
+		if (!_grounded)
+		{
+			_lastGroundedTime++;
+		}
+		else if (_grounded && _lastGroundedTime > 2)
+		{
+			Audio::Play(_landSFX);
+			_lastGroundedTime = 0;
+		}
+		else
+		{
+			_lastGroundedTime = 0;
+		}
 	}
 }
 
 void Player::Draw(int elapsedTime)
 {
 	SpriteBatch::BeginDraw(); // Starts Drawing
-	_level->Draw(elapsedTime); // Calls draw function in the level cpp
 	SpriteBatch::Draw(_playerTexture, _playerPosition, _playerSourceRect); // Draws Pacman
-
+	_level->Draw(elapsedTime);
 
 	// Draws the pause menu when _paused is true
 	if(_paused)
@@ -460,4 +412,3 @@ void Player::Draw(int elapsedTime)
 	SpriteBatch::EndDraw(); // Ends Drawing
 
 }
-
