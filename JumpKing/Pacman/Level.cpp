@@ -13,12 +13,25 @@ Level::Level()
 
 void Level::LoadContent()
 {
+	// sets camera Parameters
 	_camera = new Rect(0.0f, 480.0f,480, 480);
+
+	_backgroundRect = new Rect(0, 0, 480, 480);
+	_backgroundTex = new Texture2D;
+	_backgroundTex->Load("Content/Textures/Background.PNG", false);
+	_bgCurrentFrame = 0;
+	_bgCurrentFrameTime = 0;
+
+	// Plays background track
+	_bgTrack = new SoundEffect(true, 1, 1);
+	_bgTrack->Load("Content/Sounds/Void.wav");
+	Audio::Play(_bgTrack);
 }
 
 Level::~Level(void)
 {	
 	delete _camera;
+	delete _backgroundTex;
 	for (vector<vector<Tile*>>::iterator it = _tiles->begin(); it != _tiles->end(); it++)
 	{
 		for (vector<Tile*>::iterator it2 = it->begin(); it2 != it->end(); it2 ++)
@@ -157,13 +170,30 @@ int Level::CameraBottom()
 	return bottomPos;
 }
 
+void Level::AnimateBackground()
+{
+	_bgCurrentFrameTime++;
+
+	if (_bgCurrentFrameTime == 20)
+	{
+		_bgCurrentFrameTime = 0;
+		_bgCurrentFrame++;
+		if (_bgCurrentFrame >= 3)
+		{
+			_bgCurrentFrame = 0;
+		}
+		_backgroundRect->Y = _backgroundRect->Height * _bgCurrentFrame;
+	}
+}
 void Level::Draw(int elapsedTime)
 {
+	AnimateBackground();
 	DrawTiles();
 }
 
 void Level::DrawTiles()
 {
+	SpriteBatch::Draw(_backgroundTex, new Vector2 (0, 0), _backgroundRect);
 	for (int y = CameraTop(); y < CameraBottom(); ++y)
 	{
 		for (int x = 0; x < GetWidth(); ++x)
