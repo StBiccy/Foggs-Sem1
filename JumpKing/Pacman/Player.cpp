@@ -77,12 +77,17 @@ void Player::LoadContent()
 	_hitWallSFX= new SoundEffect();
 	_hitWallSFX->Load("Content/Sounds/HitWall.wav");
 
+<<<<<<< HEAD
 	_currentScene = 0;
+=======
+	_currentScene = 5;
+>>>>>>> parent of 8ca258e... Finished Portfolio fn
 
 	_lastGroundedTime = 0;
 
 
 	_level = new Level();
+<<<<<<< HEAD
 	
 	if (!Audio::IsInitialised)
 	{
@@ -90,6 +95,24 @@ void Player::LoadContent()
 	}
 	if (!_landSFX->IsLoaded())
 	{
+=======
+
+	recallSave.open("Save");
+	if(recallSave.is_open())
+	{
+		recallSave >> _playerPosition->X;
+		recallSave >> _playerPosition->Y;
+		recallSave >> _currentScene;
+
+	}
+	
+	if (!Audio::IsInitialised)
+	{
+		std::cout << "audio not initialsiesed" << std::endl;
+	}
+	if (!_landSFX->IsLoaded())
+	{
+>>>>>>> parent of 8ca258e... Finished Portfolio fn
 		std::cout << "land not loaded" << std::endl;
 	}
 }
@@ -172,7 +195,18 @@ void Player::PlayerInput(Input::KeyboardState* keyboardState, int elapsedTime)
 		}
 	}
 
+<<<<<<< HEAD
 
+=======
+	if (_grounded&& keyboardState->IsKeyDown (Input::Keys::S))
+	{
+		sendSave.open("Save");
+
+		sendSave << _playerPosition->X << endl<< _playerPosition->Y << endl << _currentScene;
+
+		sendSave.close();
+	}
+>>>>>>> parent of 8ca258e... Finished Portfolio fn
 	// pauses the game on the P input
 	if (keyboardState->IsKeyDown(Input::Keys::P) && !_pKeyDown)
 	{
@@ -331,6 +365,7 @@ void Player::PlayerAnim()
 		_playerSourceRect->Y = _playerSourceRect->Height + _playerSourceRect->Height * _direction;
 		_playerSourceRect->X = _playerSourceRect->Width * 1;
 	}
+<<<<<<< HEAD
 }
 
 void Player::Update(int elapsedTime)
@@ -375,6 +410,55 @@ void Player::Update(int elapsedTime)
 	}
 }
 
+=======
+}
+
+void Player::Update(int elapsedTime)
+{
+	PlayerInput(Input::Keyboard::GetState(), elapsedTime);
+
+	if (!_paused)
+	{
+		PlayerAnim();
+		PhysicsUpdate(elapsedTime);
+		if (_playerPosition->Y <= -32)
+		{
+			--_currentScene;
+			_playerPosition->Y = 448;
+		}
+		if (_playerPosition->Y >= 480)
+		{
+			++_currentScene;
+			_playerPosition->Y = 0;
+		}
+
+		if (!_grounded && _hitWallCheck)
+		{
+			_wallHitDelaySound++;
+			if (_wallHitDelaySound > 2)
+			{
+				Audio::Play(_hitWallSFX);
+				_wallHitDelaySound = 0;
+				_hitWallCheck = false;
+			}
+		}
+		if (!_grounded)
+		{
+			_lastGroundedTime++;
+		}
+		else if (_grounded && _lastGroundedTime > 2)
+		{
+			Audio::Play(_landSFX);
+			_lastGroundedTime = 0;
+		}
+		else
+		{
+			_lastGroundedTime = 0;
+		}
+	}
+}
+
+>>>>>>> parent of 8ca258e... Finished Portfolio fn
 void Player::Draw(int elapsedTime)
 {
 	// Allows us to easily create a string

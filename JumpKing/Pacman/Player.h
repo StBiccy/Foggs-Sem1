@@ -12,6 +12,10 @@
 
 // Just need to include main header file
 #include "S2D/S2D.h"
+<<<<<<< HEAD
+=======
+#include <fstream>;
+>>>>>>> parent of 8ca258e... Finished Portfolio fn
 
 // Reduces the amount of typing by including all classes in S2D namespace
 using namespace S2D;
@@ -26,6 +30,12 @@ private:
 
 	int _currentScene;
 
+<<<<<<< HEAD
+=======
+	ifstream recallSave;
+	ofstream sendSave;
+
+>>>>>>> parent of 8ca258e... Finished Portfolio fn
 	// Data to represent animation
 	bool _walking;
 	bool _jumping;
